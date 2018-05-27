@@ -1,0 +1,18 @@
+{
+    "output_dir": "outputs",
+    "servername": null,
+    "score_config": {
+        "answer": [0, 1, 2, 2],
+        "stealth": {
+            "all": 0,
+            "none": 1,
+            "observer": 0
+        },
+        "bonus": {
+            "win": {
+                "score": 1,
+                "description": "勝利"
+            }
+        }
+    }
+}
