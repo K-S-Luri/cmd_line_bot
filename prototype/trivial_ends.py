@@ -17,6 +17,8 @@ class MyBackEnd(CLBBackEnd):
     def manage_cmdline(self, cmdline):
         # print("backend: " + cmdline)
         parsed = self.parse_cmdline(cmdline)
+        if parsed is None:
+            return []
         cmd = parsed[0]
         tasks = []
         if cmd == "dm":
@@ -27,4 +29,6 @@ class MyBackEnd(CLBBackEnd):
             tasks.append(CLBTask(tasktype="msg", channelname=parsed[1], text=parsed[2], filename="dice.png"))
         return tasks
     def parse_cmdline(self, cmdline):
-        return cmdline.split()
+        if not cmdline.startswith("!"):
+            return None
+        return cmdline[1:].split()
