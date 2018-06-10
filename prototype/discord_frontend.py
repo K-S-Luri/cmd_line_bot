@@ -32,16 +32,24 @@ class DiscordFrontEnd(CLBFrontEnd):
                 await self.config.reply_to_msg(traceback.format_exc(), msg)
                 raise e
         client.run(self.token)
-    async def send_msg(self, channelname, text):
+    async def send_msg(self, channelname, text, filename=None):
         channel = self.config.get_channel_named(channelname)
         if channel is None:
             raise CLBError("チャンネル名が不正です")
-        await self.config.client.send_message(destination=channel, content=text)
-    async def send_dm(self, username, text):
+        client = self.config.client
+        if filename is None:
+            await client.send_message(destination=channel, content=text)
+        else:
+            await client.send_file(destination=channel, fp=filename, content=text)
+    async def send_dm(self, username, text, filename=None):
         user = self.config.get_user_named(username)
         if user is None:
             raise CLBError("ユーザー名が不正です")
-        await self.config.client.send_message(destination=user, content=text)
+        client = self.config.client
+        if filename is None:
+            await client.send_message(destination=user, content=text)
+        else:
+            await client.send_file(destination=user, fp=filename, content=text)
     async def init_client(self, msg):
         if msg.server is None:
             raise CLBError("`%s`は(DMではなく，サーバー内の)テキストチャンネルに送信してください" % self.init_cmd)

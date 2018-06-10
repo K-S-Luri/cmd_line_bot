@@ -20,9 +20,9 @@ class CmdLineBot:
                 task_group = [task_group]
             for task in task_group:
                 if task.type == "msg":
-                    coroutines.append(self.frontend.send_msg(channelname=task.channelname, text=task.text))
+                    coroutines.append(self.frontend.send_msg(channelname=task.channelname, text=task.text, filename=task.filename))
                 elif task.type == "dm":
-                    coroutines.append(self.frontend.send_dm(username=task.username, text=task.text))
+                    coroutines.append(self.frontend.send_dm(username=task.username, text=task.text, filename=task.filename))
             await asyncio.gather(*coroutines)
 
 class CLBFrontEnd(metaclass=ABCMeta):
@@ -32,10 +32,10 @@ class CLBFrontEnd(metaclass=ABCMeta):
     def run(self, callback):
         pass
     @abstractmethod
-    async def send_msg(self, channelname, text):
+    async def send_msg(self, channelname, text, filename):
         pass
     @abstractmethod
-    async def send_dm(self, username, text):
+    async def send_dm(self, username, text, filename):
         pass
 
 class CLBBackEnd(metaclass=ABCMeta):
@@ -47,8 +47,9 @@ class CLBBackEnd(metaclass=ABCMeta):
 
 # API用のクラス
 class CLBTask:
-    def __init__(self, tasktype, username=None, channelname=None, text=None):
+    def __init__(self, tasktype, username=None, channelname=None, text=None, filename=None):
         self.type = tasktype
         self.username = username
         self.channelname = channelname
         self.text = text
+        self.filename = filename
