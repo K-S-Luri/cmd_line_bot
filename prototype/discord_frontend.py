@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import discord
-from cmd_line_bot import CLBFrontEnd
+from cmd_line_bot import CLBFrontEnd, CLBCmdLine
 from clb_error import CLBError
 from clb_data import CLBData
 
@@ -24,7 +24,12 @@ class DiscordFrontEnd(CLBFrontEnd):
             try:
                 if msg.content == self.init_cmd:
                     await self.init_client(msg)
-                await callback(msg.content)
+                if isinstance(msg.channel, discord.Channel):
+                    cmdline_type = "msg"
+                elif isinstance(msg.channel, discord.PrivateChannel):
+                    cmdline_type = "dm"
+                cmdline = CLBCmdLine(cmdline_type=cmdline_type, content=msg.content, author=msg.author)
+                await callback(cmdline)
             except CLBError as e:
                 await self.config.reply_to_msg(e.get_msg_to_discord(), msg)
             except Exception as e:

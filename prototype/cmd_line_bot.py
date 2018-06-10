@@ -13,6 +13,7 @@ class CmdLineBot:
     def run(self):
         self.frontend.run(self.call_backend)
     async def call_backend(self, cmdline):
+        assert isinstance(cmdline, CLBCmdLine)
         tasks = self.backend.manage_cmdline(cmdline)
         for task_group in tasks:
             coroutines = []
@@ -53,3 +54,8 @@ class CLBTask:
         self.channelname = channelname
         self.text = text
         self.filename = filename
+class CLBCmdLine:
+    def __init__(self, cmdline_type, content, author):
+        self.type = cmdline_type # "msg", "dm"
+        self.content = content
+        self.author = author

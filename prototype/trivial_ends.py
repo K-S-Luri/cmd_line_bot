@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
-from cmd_line_bot import CLBFrontEnd, CLBBackEnd, CLBTask
+from cmd_line_bot import CLBFrontEnd, CLBBackEnd, CLBTask, CLBCmdLine
 
 class MyFrontEnd(CLBFrontEnd):
     def run(self, callback):
@@ -15,18 +15,20 @@ class MyFrontEnd(CLBFrontEnd):
 
 class MyBackEnd(CLBBackEnd):
     def manage_cmdline(self, cmdline):
-        # print("backend: " + cmdline)
-        parsed = self.parse_cmdline(cmdline)
+        assert isinstance(cmdline, CLBCmdLine)
+        parsed = self.parse_cmdline(cmdline.content)
         if parsed is None:
             return []
         cmd = parsed[0]
+        name = parsed[1]
+        text = "(%s from %s)\n%s" % (cmdline.type, cmdline.author, parsed[2])
         tasks = []
         if cmd == "dm":
-            tasks.append(CLBTask(tasktype="dm", username=parsed[1], text=parsed[2]))
+            tasks.append(CLBTask(tasktype="dm", username=name, text=text))
         if cmd == "msg":
-            tasks.append(CLBTask(tasktype="msg", channelname=parsed[1], text=parsed[2]))
+            tasks.append(CLBTask(tasktype="msg", channelname=name, text=text))
         if cmd == "file":
-            tasks.append(CLBTask(tasktype="msg", channelname=parsed[1], text=parsed[2], filename="dice.png"))
+            tasks.append(CLBTask(tasktype="msg", channelname=name, text=text, filename="dice.png"))
         return tasks
     def parse_cmdline(self, cmdline):
         if not cmdline.startswith("!"):
