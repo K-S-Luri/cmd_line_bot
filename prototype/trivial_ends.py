@@ -2,16 +2,28 @@
 import asyncio
 from cmd_line_bot import CLBFrontEnd, CLBBackEnd, CLBTask, CLBCmdLine
 
+linesep = "----------\n"
+
 class MyFrontEnd(CLBFrontEnd):
     def run(self, callback):
         print("This is MyFrontEnd")
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(callback("dm user1 private"))
-        loop.run_until_complete(callback("msg ch1 open"))
-    async def send_msg(self, channelname, text):
-        print("[%s] %s" % (channelname, text))
-    async def send_dm(self, username, text):
-        print("<DM@%s> %s" % (username, text))
+        contents = ["!dm user1 private", "!msg ch1 open", "!file ch2 hoge"]
+        for content in contents:
+            cmdline = CLBCmdLine(cmdline_type="msg", content=content, author="dummy")
+            loop.run_until_complete(callback(cmdline))
+    async def send_msg(self, channelname, text, filename=None):
+        if filename is None:
+            fileinfo = ""
+        else:
+            fileinfo = " attached: %s" % filename
+        print(linesep + "[%s]%s\n%s" % (channelname, fileinfo, text))
+    async def send_dm(self, username, text, filename=None):
+        if filename is None:
+            fileinfo = ""
+        else:
+            fileinfo = " attached: %s" % filename
+        print(linesep + "<DM@%s>%s\n%s" % (username, fileinfo, text))
 
 class MyBackEnd(CLBBackEnd):
     def manage_cmdline(self, cmdline):
