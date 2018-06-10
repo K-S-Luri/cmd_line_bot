@@ -14,12 +14,16 @@ class CmdLineBot:
         self.frontend.run(self.call_backend)
     async def call_backend(self, cmdline):
         tasks = self.backend.manage_cmdline(cmdline)
-        loop = asyncio.get_event_loop()
-        for task in tasks:
-            if task["type"] == "msg":
-                await self.frontend.send_msg(channel=task["channel"], text=task["text"])
-            elif task["type"] == "dm":
-                await self.frontend.send_dm(user=task["user"], text=task["text"])
+        for task_group in tasks:
+            coroutines = []
+            if isinstance(task_group, dict):
+                task_group = [task_group]
+            for task in task_group:
+                if task["type"] == "msg":
+                    coroutines.append(self.frontend.send_msg(channel=task["channel"], text=task["text"]))
+                elif task["type"] == "dm":
+                    coroutines.append(self.frontend.send_dm(user=task["user"], text=task["text"]))
+            await asyncio.gather(*coroutines)
 
 class CLBFrontEnd(metaclass=ABCMeta):
     def __init__(self):
