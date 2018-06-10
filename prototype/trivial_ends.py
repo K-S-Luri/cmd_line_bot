@@ -8,10 +8,10 @@ class MyFrontEnd(CLBFrontEnd):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(callback("dm user1 private"))
         loop.run_until_complete(callback("msg ch1 open"))
-    async def send_msg(self, channel, text):
-        print("[%s] %s" % (channel, text))
-    async def send_dm(self, user, text):
-        print("<DM@%s> %s" % (user, text))
+    async def send_msg(self, channelname, text):
+        print("[%s] %s" % (channelname, text))
+    async def send_dm(self, username, text):
+        print("<DM@%s> %s" % (username, text))
 
 class MyBackEnd(CLBBackEnd):
     def manage_cmdline(self, cmdline):
@@ -21,11 +21,11 @@ class MyBackEnd(CLBBackEnd):
         tasks = []
         if cmd == "dm":
             tasks.append({"type": "dm",
-                          "user": parsed[1],
+                          "username": parsed[1],
                           "text": parsed[2]})
         if cmd == "msg":
             tasks.append({"type": "msg",
-                          "channel": parsed[1],
+                          "channelname": parsed[1],
                           "text": parsed[2]})
         return tasks
     def parse_cmdline(self, cmdline):

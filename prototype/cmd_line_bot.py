@@ -20,9 +20,9 @@ class CmdLineBot:
                 task_group = [task_group]
             for task in task_group:
                 if task["type"] == "msg":
-                    coroutines.append(self.frontend.send_msg(channel=task["channel"], text=task["text"]))
+                    coroutines.append(self.frontend.send_msg(channelname=task["channelname"], text=task["text"]))
                 elif task["type"] == "dm":
-                    coroutines.append(self.frontend.send_dm(user=task["user"], text=task["text"]))
+                    coroutines.append(self.frontend.send_dm(username=task["username"], text=task["text"]))
             await asyncio.gather(*coroutines)
 
 class CLBFrontEnd(metaclass=ABCMeta):
@@ -32,10 +32,10 @@ class CLBFrontEnd(metaclass=ABCMeta):
     def run(self, callback):
         pass
     @abstractmethod
-    async def send_msg(self, channel, text):
+    async def send_msg(self, channelname, text):
         pass
     @abstractmethod
-    async def send_dm(self, user, text):
+    async def send_dm(self, username, text):
         pass
 
 class CLBBackEnd(metaclass=ABCMeta):

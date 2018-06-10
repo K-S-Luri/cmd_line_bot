@@ -32,13 +32,13 @@ class DiscordFrontEnd(CLBFrontEnd):
                 await self.config.reply_to_msg(traceback.format_exc(), msg)
                 raise e
         client.run(self.token)
-    async def send_msg(self, channel, text):
-        channel = self.config.get_channel_named(channel)
+    async def send_msg(self, channelname, text):
+        channel = self.config.get_channel_named(channelname)
         if channel is None:
             raise CLBError("チャンネル名が不正です")
         await self.config.client.send_message(destination=channel, content=text)
-    async def send_dm(self, user, text):
-        user = self.config.get_user_named(user)
+    async def send_dm(self, username, text):
+        user = self.config.get_user_named(username)
         if user is None:
             raise CLBError("ユーザー名が不正です")
         await self.config.client.send_message(destination=user, content=text)
