@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
-from cmd_line_bot import CLBFrontEnd, CLBBackEnd
+from cmd_line_bot import CLBFrontEnd, CLBBackEnd, CLBTask
 
 class MyFrontEnd(CLBFrontEnd):
     def run(self, callback):
@@ -20,13 +20,9 @@ class MyBackEnd(CLBBackEnd):
         cmd = parsed[0]
         tasks = []
         if cmd == "dm":
-            tasks.append({"type": "dm",
-                          "username": parsed[1],
-                          "text": parsed[2]})
+            tasks.append(CLBTask(tasktype="dm", username=parsed[1], text=parsed[2]))
         if cmd == "msg":
-            tasks.append({"type": "msg",
-                          "channelname": parsed[1],
-                          "text": parsed[2]})
+            tasks.append(CLBTask(tasktype="msg", channelname=parsed[1], text=parsed[2]))
         return tasks
     def parse_cmdline(self, cmdline):
         return cmdline.split()

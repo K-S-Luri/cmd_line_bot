@@ -16,13 +16,13 @@ class CmdLineBot:
         tasks = self.backend.manage_cmdline(cmdline)
         for task_group in tasks:
             coroutines = []
-            if isinstance(task_group, dict):
+            if isinstance(task_group, CLBTask):
                 task_group = [task_group]
             for task in task_group:
-                if task["type"] == "msg":
-                    coroutines.append(self.frontend.send_msg(channelname=task["channelname"], text=task["text"]))
-                elif task["type"] == "dm":
-                    coroutines.append(self.frontend.send_dm(username=task["username"], text=task["text"]))
+                if task.type == "msg":
+                    coroutines.append(self.frontend.send_msg(channelname=task.channelname, text=task.text))
+                elif task.type == "dm":
+                    coroutines.append(self.frontend.send_dm(username=task.username, text=task.text))
             await asyncio.gather(*coroutines)
 
 class CLBFrontEnd(metaclass=ABCMeta):
@@ -44,3 +44,11 @@ class CLBBackEnd(metaclass=ABCMeta):
     @abstractmethod
     def manage_cmdline(self, cmdline):
         pass
+
+# API用のクラス
+class CLBTask:
+    def __init__(self, tasktype, username=None, channelname=None, text=None):
+        self.type = tasktype
+        self.username = username
+        self.channelname = channelname
+        self.text = text
