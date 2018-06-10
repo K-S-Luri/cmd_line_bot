@@ -5,12 +5,12 @@ from clb_error import CLBError
 from clb_data import CLBData
 
 class DiscordFrontEnd(CLBFrontEnd):
-    def __init__(self, token, init_cmd="!init", data_path="~/.clbrc", datacategory="discord"):
+    def __init__(self, token, init_cmd="!init", data_path="~/.clbrc", data_category="discord"):
         self.token = token
         self.init_cmd = init_cmd
         data = CLBData(path=data_path)
         client = discord.Client()
-        self.config = DiscordConfig(client, data, datacategory)
+        self.config = DiscordConfig(client, data, data_category)
         @client.event
         async def on_ready():
             print("logged in as")
@@ -51,23 +51,23 @@ class DiscordFrontEnd(CLBFrontEnd):
         await self.config.reply_to_msg("initしました", msg)
 
 class DiscordConfig:
-    def __init__(self, client, data, datacategory):
+    def __init__(self, client, data, data_category):
         assert isinstance(client, discord.Client)
         assert isinstance(data, CLBData)
         self.client = client
         self.data = data
-        self.datacategory = datacategory
-        self.data.add_category(datacategory)
+        self.data_category = data_category
+        self.data.add_category(data_category)
         self.server = None
     def get_server(self):
         if self.server is None:
-            servername = self.data.get(self.datacategory, "servername")
+            servername = self.data.get(self.data_category, "servername")
             self.set_server_named(servername)
         return self.server
     def set_server(self, server):
         assert isinstance(server, discord.Server)
         self.server = server
-        self.data.set(self.datacategory, "servername", server.name)
+        self.data.set(self.data_category, "servername", server.name)
     def set_server_named(self, servername):
         servers = self.client.servers
         for server in servers:
