@@ -2,13 +2,15 @@
 import discord
 from cmd_line_bot import CLBFrontEnd
 from clb_error import CLBError
+from clb_data import CLBData
 
 class DiscordFrontEnd(CLBFrontEnd):
-    def __init__(self, token, init_cmd="!init"):
+    def __init__(self, token, init_cmd="!init", data_path="~/.clbrc", datacategory="discord"):
         self.token = token
         self.init_cmd = init_cmd
+        data = CLBData(path=data_path)
         client = discord.Client()
-        self.config = DiscordConfig(client)
+        self.config = DiscordConfig(client, data, datacategory)
         @client.event
         async def on_ready():
             print("logged in as")
@@ -45,14 +47,27 @@ class DiscordFrontEnd(CLBFrontEnd):
             raise CLBError("`%s`は(DMではなく，サーバー内の)テキストチャンネルに送信してください" % self.init_cmd)
         print("[Initialize client]\nServer: %s" % msg.server)
         self.config.set_server(msg.server)
+        self.config.save()
         await self.config.reply_to_msg("initしました", msg)
 
 class DiscordConfig:
-    def __init__(self, client):
+    def __init__(self, client, data, datacategory):
+        assert isinstance(client, discord.Client)
+        assert isinstance(data, CLBData)
         self.client = client
+        self.data = data
+        self.datacategory = datacategory
+        self.data.add_category(datacategory)
         self.server = None
+    def get_server(self):
+        if self.server is None:
+            servername = self.data.get(self.datacategory, "servername")
+            self.set_server_named(servername)
+        return self.server
     def set_server(self, server):
+        assert isinstance(server, discord.Server)
         self.server = server
+        self.data.set(self.datacategory, "servername", server.name)
     def set_server_named(self, servername):
         servers = self.client.servers
         for server in servers:
@@ -63,14 +78,18 @@ class DiscordConfig:
     async def reply_to_msg(self, text, msg):
         await self.client.send_message(msg.channel, text)
     def get_channel_named(self, channelname):
-        if self.server is None:
+        server = self.get_server()
+        if server is None:
             return None
-        channels = self.server.channels
+        channels = server.channels
         for channel in channels:
             if channelname == channel.name:
                 return channel
         return None
     def get_user_named(self, username):
-        if self.server is None:
+        server = self.get_server()
+        if server is None:
             return None
-        return self.server.get_member_named(username)
+        return server.get_member_named(username)
+    def save(self):
+        self.data.save()
