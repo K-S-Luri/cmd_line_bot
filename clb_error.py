@@ -7,3 +7,6 @@ class CLBError(Exception):
         return self.error_msg
     def get_msg_to_discord(self):
         return "[Error] %s" % self.error_msg
+
+class CLBIndexError(CLBError):
+    pass
