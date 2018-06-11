@@ -27,6 +27,7 @@ class CmdArgBackEnd(CLBBackEnd):
             return []
         return self._rootcmd.run(cmdargline, -1)
 
+
 # コマンドのテンプレート
 class CLBCmd(metaclass=ABCMeta):
     def __init__(self):
@@ -63,10 +64,17 @@ class CLBCmdWithSub(CLBCmd):
             error_msg += subcmd.get_usage()
         raise CLBError(error_msg)
 
+
 # API用のクラスを拡張
 class CLBCmdArgLine:
     def __init__(self, cmdline):
         self._cmdline = cmdline
+    def get_type(self):
+        return self._cmdline.type
+    def get_author(self):
+        return self._cmdline.author
+    def get_channelname(self):
+        return self._cmdline.channelname
     def parse(self, parser):
         self.parsed_content = parser(self._cmdline.content)
         if self.parsed_content is None:
@@ -85,3 +93,14 @@ class CLBCmdArgLine:
     def get_args(self, pointer):
         assert self.get_num_args(pointer) >= 0
         return self.parsed_content[pointer+1:]
+
+# utilities
+def create_reply_task(cmdargline, text=None, filename=None):
+    assert isinstance(cmdargline, CLBCmdArgLine)
+    tasktype = cmdargline.get_type()
+    if tasktype == "msg":
+        channelname = cmdargline.get_channelname()
+        return CLBTask(tasktype=tasktype, channelname=channelname, text=text, filename=filename)
+    elif tasktype == "dm":
+        author = cmdargline.get_author()
+        return CLBTask(tasktype=tasktype, username=author, text=text, filename=filename)

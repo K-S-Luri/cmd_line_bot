@@ -58,7 +58,14 @@ class CLBTask:
         self.filename = filename
 
 class CLBCmdLine:
-    def __init__(self, cmdline_type, content, author):
-        self.type = cmdline_type # "msg", "dm"
+    def __init__(self, cmdline_type, content, author, channelname=None):
+        assert cmdline_type in ["msg", "dm"]
+        assert isinstance(content, str) and isinstance(author, str)
+        if cmdline_type == "msg":
+            assert isinstance(channelname, str)
+        elif cmdline_type == "dm":
+            assert channelname is None
+        self.type = cmdline_type
         self.content = content
         self.author = author
+        self.channelname = channelname

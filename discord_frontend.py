@@ -26,9 +26,12 @@ class DiscordFrontEnd(CLBFrontEnd):
                     await self.init_client(msg)
                 if isinstance(msg.channel, discord.Channel):
                     cmdline_type = "msg"
+                    channelname = msg.channel.name
                 elif isinstance(msg.channel, discord.PrivateChannel):
                     cmdline_type = "dm"
-                cmdline = CLBCmdLine(cmdline_type=cmdline_type, content=msg.content, author=msg.author)
+                    channelname = None
+                cmdline = CLBCmdLine(cmdline_type=cmdline_type, content=msg.content,
+                                     author=msg.author.name, channelname=channelname)
                 await callback(cmdline)
             except CLBError as e:
                 await self.config.reply_to_msg(e.get_msg_to_discord(), msg)
