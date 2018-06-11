@@ -12,10 +12,10 @@
 - `python3` (`version > 3.5`)
 
 # documentation
-## `main.py`
+## main.py
 名前の通り．`CmdLineBot`, `CLBFrontEnd`, `CLBBackEnd`の使い方はここを見ると良いかも．
 
-## `cmd_line_bot.py`
+## cmd_line_bot.py
 frontendとbackendの間のインターフェースを規定している．
 - `CmdLineBot`: bot本体
 -  `CLBFrontEnd`: ユーザーとのインターフェースを与える．Abstract Classなので，継承して実装を与える必要がある．
@@ -23,15 +23,15 @@ frontendとbackendの間のインターフェースを規定している．
 -  `CLBBackEnd`: bot本体の処理を行う．こちらもAbstract Class．
 -  `CLBTask`, `CLBCmdLine`: `CLBFrontEnd`と`CLBBackEnd`の間でデータのやりとりをするためのclass．
 
-## `discord_frontend.py`
+## discord_frontend.py
 discord用の`CLBFrontEnd`．
 
-## `cmd_arg_backend.py`
+## cmd_arg_backend.py
 shellっぽい感じでbotを操作する`CLBBackEnd`．
 実際の使い方については`example_backend.py`を見てほしい．
 コマンドラインのパースは`parser.py`が担当．
 
-## `trivial_ends.py`
+## trivial_ends.py
 暫定的にテキトーに作っただけなので，多分そのうち消す．
 
 # 利用方法
