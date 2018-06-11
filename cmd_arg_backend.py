@@ -2,21 +2,10 @@
 from abc import ABCMeta, abstractmethod
 from cmd_line_bot import CLBBackEnd, CLBTask, CLBCmdLine
 from clb_error import CLBError, CLBIndexError
-
-def space_sep_parser(cmdline_content):
-    """`!cmd arg1 arg2`
-    !で始まり，スペース区切り．
-    そのうちquotationとかにも対応したい
-    """
-    if not cmdline_content.startswith("!"):
-        return None
-    parsed = cmdline_content[1:].split()
-    if len(parsed) == 0:
-        parsed = [""]
-    return parsed
+from parser import quote_parser
 
 class CmdArgBackEnd(CLBBackEnd):
-    def __init__(self, rootcmd, parser=space_sep_parser):
+    def __init__(self, rootcmd, parser=quote_parser):
         self._parser = parser
         self._rootcmd = rootcmd
     def manage_cmdline(self, cmdline):
