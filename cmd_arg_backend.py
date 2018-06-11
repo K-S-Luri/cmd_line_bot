@@ -35,7 +35,7 @@ class CLBCmd(metaclass=ABCMeta):
     def accept_key(self, key):
         return key in self._keys
     def accept(self, cmdargline, pointer):
-        return self.accept_key(cmdargline.get_nth_content(pointer))
+        return self.accept_key(cmdargline.get_key(pointer))
     def get_keys(self):
         return self._keys
     def get_usage(self):
@@ -51,13 +51,13 @@ class CLBCmdWithSub(CLBCmd):
         assert isinstance(cmdargline, CLBCmdArgLine), "%s is not a CLBCmdArgLine" % cmdargline
         assert cmdargline.get_num_args(pointer) >= 0
         error_msg = ""
-        if cmdargline.len_parsed_content() <= pointer+1:
+        if cmdargline.get_num_args(pointer) <= 0:
             error_msg += "サブコマンドを入力して下さい\n"
         else:
             for subcmd in self._subcmds:
                 if subcmd.accept(cmdargline, pointer+1):
                     return subcmd.run(cmdargline, pointer+1)
-            error_msg = "サブコマンド名(%s)が不正です\n" % cmdargline.get_nth_content(pointer+1)
+            error_msg = "サブコマンド名(%s)が不正です\n" % cmdargline.get_key(pointer+1)
         error_msg += "コマンド一覧:\n"
         for subcmd in self._subcmds:
             error_msg += subcmd.get_usage()
@@ -73,17 +73,13 @@ class CLBCmdArgLine:
             return
         assert isinstance(self.parsed_content, list)
         assert len(self.parsed_content) > 0
-    def get_nth_content(self, nth):
+    def get_key(self, pointer):
         if not hasattr(self, "parsed_content"):
             raise CLBError("先にparseして下さい")
         assert self.parsed_content is not None
-        if nth >= len(self.parsed_content):
+        if pointer >= len(self.parsed_content):
             raise CLBIndexError("不正なindexです")
-        return self.parsed_content[nth]
-    def get_after_nth_content(self, nth):
-        return self.parsed_content[nth+1:]
-    def len_parsed_content(self):
-        return len(self.parsed_content)
+        return self.parsed_content[pointer]
     def get_num_args(self, pointer):
         return len(self.parsed_content) - pointer - 1
     def get_args(self, pointer):
