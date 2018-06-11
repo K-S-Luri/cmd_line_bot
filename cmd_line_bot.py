@@ -15,6 +15,7 @@ class CmdLineBot:
     async def call_backend(self, cmdline):
         assert isinstance(cmdline, CLBCmdLine)
         tasks = self.backend.manage_cmdline(cmdline)
+        assert isinstance(tasks, list)
         for task_group in tasks:
             coroutines = []
             if isinstance(task_group, CLBTask):
