@@ -5,12 +5,17 @@ from clb_error import CLBError
 from clb_data import CLBData
 
 class DiscordFrontEnd(CLBFrontEnd):
-    def __init__(self, token, init_cmd="!init", data_path="~/.clbrc", data_category="discord"):
-        self.token = token
+    def __init__(self, init_cmd="!init", data_path="~/.clbrc", data_category="discord"):
         self.init_cmd = init_cmd
+        # configの準備
         data = CLBData(path=data_path)
         client = discord.Client()
         self.config = DiscordConfig(client, data, data_category)
+        # tokenの設定
+        self.token = self.config.get_token()
+        if self.token is None:
+            raise CLBError("設定ファイル(%s)にtokenを指定してください" % data_path)
+        # clientログイン成功時の処理
         @client.event
         async def on_ready():
             print("logged in as")
@@ -75,6 +80,8 @@ class DiscordConfig:
         self.data_category = data_category
         self.data.add_category(data_category)
         self.server = None
+    def get_token(self):
+        return self.data.get(self.data_category, "token")
     def get_server(self):
         if self.server is None:
             servername = self.data.get(self.data_category, "servername")

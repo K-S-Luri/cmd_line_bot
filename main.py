@@ -6,10 +6,9 @@ from example_backend import example_backend
 
 
 def main():
-    token = "NDU1Mjg1OTQwODQ0NDk0ODUw.Df5zIw.Qy0amuaPNJSVSEH30o0H3Gm4e1Y"
     # frontend
     frontend = MyFrontEnd()
-    frontend = DiscordFrontEnd(token)
+    frontend = DiscordFrontEnd()
     # backend
     backend = MyBackEnd()
     backend = example_backend
