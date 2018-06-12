@@ -16,34 +16,37 @@ class DiscordFrontEnd(CLBFrontEnd):
         if self.token is None:
             raise CLBError("設定ファイル(%s)にtokenを指定してください" % data_path)
         # clientログイン成功時の処理
-        @client.event
-        async def on_ready():
-            print("logged in as")
-            print("[name] %s" % client.user.name)
-            print("[ id ] %s" % client.user.id)
-            print("------")
+        client.event(self.on_ready)
+    async def on_ready(self):
+        client = self.config.client
+        print("logged in as")
+        print("[name] %s" % client.user.name)
+        print("[ id ] %s" % client.user.id)
+        print("------")
+    async def on_message(self, callback, msg):
+        try:
+            if msg.content == self.init_cmd:
+                await self.init_client(msg)
+            if isinstance(msg.channel, discord.Channel):
+                cmdline_type = "msg"
+                channelname = msg.channel.name
+            elif isinstance(msg.channel, discord.PrivateChannel):
+                cmdline_type = "dm"
+                channelname = None
+            cmdline = CLBCmdLine(cmdline_type=cmdline_type, content=msg.content,
+                                 author=msg.author.name, channelname=channelname)
+            await callback(cmdline)
+        except CLBError as e:
+            await self.config.reply_to_msg(e.get_msg_to_discord(), msg)
+        except Exception as e:
+            import traceback
+            await self.config.reply_to_msg(traceback.format_exc(), msg)
+            raise e
     def run(self, callback):
         client = self.config.client
         @client.event
         async def on_message(msg):
-            try:
-                if msg.content == self.init_cmd:
-                    await self.init_client(msg)
-                if isinstance(msg.channel, discord.Channel):
-                    cmdline_type = "msg"
-                    channelname = msg.channel.name
-                elif isinstance(msg.channel, discord.PrivateChannel):
-                    cmdline_type = "dm"
-                    channelname = None
-                cmdline = CLBCmdLine(cmdline_type=cmdline_type, content=msg.content,
-                                     author=msg.author.name, channelname=channelname)
-                await callback(cmdline)
-            except CLBError as e:
-                await self.config.reply_to_msg(e.get_msg_to_discord(), msg)
-            except Exception as e:
-                import traceback
-                await self.config.reply_to_msg(traceback.format_exc(), msg)
-                raise e
+            await self.on_message(callback, msg)
         client.run(self.token)
     async def send_msg(self, channelname, text, filename=None):
         channel = self.config.get_channel_named(channelname)
