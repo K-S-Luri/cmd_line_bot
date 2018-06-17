@@ -76,3 +76,4 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 - `!init` したときにbackendがエラーを吐くのを修正
 - コマンドのエラーメッセージの調整
   (ルートコマンドなのに「サブコマンド名が不正」と出る)
+- `discord.pyi`でclassのattributeのtype hintはどうやって書く？(e.g. `client.user.name`がstrだと知らせたい)
