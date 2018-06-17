@@ -39,6 +39,14 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 1. bot用のユーザーを作成する
 2. `bot-token`を取得(コピーしておく)
 3. botを自分のチャンネルに追加する
+4. `~/.clbrc` に以下の形のjsonデータを作成
+```json
+{
+    "discord": {
+        "token": "上で取得したbot-token"
+    }
+}
+```
 
 ## PCでのinstallとsetup(Windows)
 1. `python3`をインストールする．
@@ -47,3 +55,15 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 
 ## PCでのinstallとsetup(Ubuntu)
 1. `sudo apt install python3 python3-pip wkhtmltopdf`
+
+# TODO
+## 大きなやつ
+- type hints
+- マルチスレッド化
+- cron的なやつ(要マルチスレッド)
+- バチャコン機能
+
+## 細かいやつ
+- `!init` したときにbackendがエラーを吐くのを修正
+- コマンドのエラーメッセージの調整
+  (ルートコマンドなのに「サブコマンド名が不正」と出る)
