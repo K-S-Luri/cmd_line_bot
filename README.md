@@ -9,7 +9,14 @@
 
 # 動作環境
 - OSは多分何でも大丈夫(Ubuntu上で開発)
-- `python3` (`version > 3.5`)
+- `python3` (`version > 3.6`)
+    * `Ubuntu 16.04`に`python 3.6`を(ソースからビルドして)インストールする際に，
+      `make test`で`test_urllib2net`に失敗した．
+      これは，`sudo apt install libssl-dev`することで解決した．
+      参考: [Import Error: No module named _ssl](https://stackoverflow.com/questions/5128845/importerror-no-module-named-ssl)
+- 以下のpythonライブラリが必要
+    * `discord` (`python3 -m pip install -U discord.py`)
+    * `pytypes` (`python3 -m pip install pytypes`)
 
 # documentation
 ## main.py
@@ -36,7 +43,8 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 
 # 利用方法
 ## botユーザーの準備
-1. bot用のユーザーを作成する
+1. [Discordデベロッパーページ](https://discordapp.com/developers/applications/me)
+   でbot用のユーザーを作成する
 2. `bot-token`を取得(コピーしておく)
 3. botを自分のチャンネルに追加する
 4. `~/.clbrc` に以下の形のjsonデータを作成
@@ -64,6 +72,7 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 - バチャコン機能
 
 ## 細かいやつ
+- `CLBTask` をサブクラスに分ける
 - `!init` したときにbackendがエラーを吐くのを修正
 - コマンドのエラーメッセージの調整
   (ルートコマンドなのに「サブコマンド名が不正」と出る)
