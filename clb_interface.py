@@ -1,5 +1,6 @@
 from typing import Optional
 
+
 # API用のクラス
 class CLBTask:
     # msg と dm で分けてサブクラスを作った方が良いかも
@@ -14,13 +15,14 @@ class CLBTask:
         self.text = text
         self.filename = filename
 
+
 class CLBCmdLine:
+    # CLBTaskと同じく，msg と dm で分けてサブクラスを作る？
     def __init__(self, cmdline_type: str,
                  content: str,
                  author: str,
                  channelname: Optional[str] = None) -> None:
         assert cmdline_type in ["msg", "dm"]
-        assert isinstance(content, str) and isinstance(author, str)
         if cmdline_type == "msg":
             assert isinstance(channelname, str)
         elif cmdline_type == "dm":

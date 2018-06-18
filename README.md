@@ -77,3 +77,6 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 - コマンドのエラーメッセージの調整
   (ルートコマンドなのに「サブコマンド名が不正」と出る)
 - `discord.pyi`でclassのattributeのtype hintはどうやって書く？(e.g. `client.user.name`がstrだと知らせたい)
+- `json`から読みとったデータを利用する際は，(特に実行時の)型チェックに気を使った方が良さそう．
+  →`@typechecked`を利用する？
+- `isinstance`はなるべく排除し，`@typechecked`を利用する．

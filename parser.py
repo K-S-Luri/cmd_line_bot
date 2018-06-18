@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
+from typing import List, Optional, Union
+
 from clb_error import CLBError
 
-def simple_parser(cmdline_content):
+
+def simple_parser(cmdline_content: str) -> Optional[List[str]]:
     """`!cmd arg1 arg2`
     !で始まり，スペース区切り．
     """
@@ -12,7 +15,8 @@ def simple_parser(cmdline_content):
         parsed = [""]
     return parsed
 
-def quote_parser(cmdline_content):
+
+def quote_parser(cmdline_content: str) -> Optional[List[str]]:
     """`!cmd arg1 'arg2 with space'
     !で始まり，スペース区切り．quoteもできる
     """
@@ -23,13 +27,21 @@ def quote_parser(cmdline_content):
         parsed = [""]
     return parsed
 
+
 class Parser:
     sep_char = " "
     quote_chars = ["'", '"']
     escape_char = "\\"          # discord のエスケープ機能と衝突して上手くいかないかも？
-    def __init__(self, text):
+
+    def __init__(self, text: str) -> None:
         self.text = text
-    def read(self):
+        self.parsed = []  # type: List[str]
+        self.current = ""
+        self.pointer = 0
+        self.escaped = False
+        self.quoted = False  # type: Union[bool, str]
+
+    def read(self) -> bool:
         if self.pointer == len(self.text):
             if self.quoted:
                 raise CLBError("quotationが閉じられていません")
@@ -64,7 +76,8 @@ class Parser:
             return True
         self.current += char
         return True
-    def get_parsed(self):
+
+    def get_parsed(self) -> List[str]:
         self.parsed = []
         self.current = ""
         self.pointer = 0
@@ -77,6 +90,7 @@ class Parser:
                 break
             self.pointer += 1
         return self.parsed
+
 
 if __name__ == '__main__':
     text = r""" hoge 'fu"\'ga'a "pi\yo\\ foo" bar"""

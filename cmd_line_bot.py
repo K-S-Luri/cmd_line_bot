@@ -7,34 +7,49 @@ from pytypes import typechecked
 from clb_error import CLBError, CLBIndexError
 from clb_interface import CLBTask, CLBCmdLine
 
+
 class CLBFrontEnd(metaclass=ABCMeta):
     def __init__(self):
         pass
+
     @abstractmethod
-    def run(self, callback: Callable[[CLBCmdLine], Coroutine[Any, Any, None]]) -> None:
+    def run(self, callback: Callable[[CLBCmdLine],
+                                     Coroutine[Any, Any, None]]) -> None:
         pass
+
     @abstractmethod
-    async def send_msg(self, channelname: str, text: Optional[str], filename: Optional[str]) -> None:
+    async def send_msg(self,
+                       channelname: str,
+                       text: Optional[str],
+                       filename: Optional[str]) -> None:
         pass
+
     @abstractmethod
-    async def send_dm(self, username: str, text: Optional[str], filename: Optional[str]) -> None:
+    async def send_dm(self,
+                      username: str,
+                      text: Optional[str],
+                      filename: Optional[str]) -> None:
         pass
+
 
 class CLBBackEnd(metaclass=ABCMeta):
     def __init__(self):
         pass
+
     @abstractmethod
     def manage_cmdline(self, cmdline: CLBCmdLine) -> List[Union[CLBTask, List[CLBTask]]]:
         pass
+
 
 class CmdLineBot:
     def __init__(self, frontend: CLBFrontEnd, backend: CLBBackEnd) -> None:
         self.frontend = frontend
         self.backend = backend
+
     def run(self) -> None:
         self.frontend.run(self.call_backend)
+
     async def call_backend(self, cmdline: CLBCmdLine) -> None:
-        assert isinstance(cmdline, CLBCmdLine), "%s is not a CLBCmdLine" % cmdline
         tasks = self.backend.manage_cmdline(cmdline)
         assert isinstance(tasks, list), "%s is not a list" % tasks
         for task_group in tasks:
