@@ -111,12 +111,16 @@ class CmdArgBackEnd(CLBBackEnd):
 
 
 # utilities
-def create_reply_task(cmdargline, text=None, filename=None):
-    assert isinstance(cmdargline, CLBCmdArgLine)
+def create_reply_task(cmdargline: CLBCmdArgLine,
+                      text: Optional[str] = None,
+                      filename: Optional[str] = None) -> CLBTask:
     tasktype = cmdargline.get_type()
     if tasktype == "msg":
         channelname = cmdargline.get_channelname()
-        return CLBTask(tasktype=tasktype, channelname=channelname, text=text, filename=filename)
+        task = CLBTask(tasktype=tasktype, channelname=channelname, text=text, filename=filename)
     elif tasktype == "dm":
         author = cmdargline.get_author()
-        return CLBTask(tasktype=tasktype, username=author, text=text, filename=filename)
+        task = CLBTask(tasktype=tasktype, username=author, text=text, filename=filename)
+    else:
+        raise CLBError("Invalid tasktype")
+    return task
