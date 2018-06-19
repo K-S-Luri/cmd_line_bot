@@ -23,9 +23,9 @@ class CLBCmdArgLine:
         return self._cmdline.channelname
 
     def parse(self,
-              parser: Callable[[str], Optional[List[str]]]) -> None:
+              parser: Callable[[str], List[str]]) -> None:
         self.parsed_content = parser(self._cmdline.content)
-        if self.parsed_content is None:
+        if len(self.parsed_content) == 0:
             return
         assert isinstance(self.parsed_content, list)
         assert len(self.parsed_content) > 0
@@ -33,7 +33,7 @@ class CLBCmdArgLine:
     def get_key(self, pointer: int) -> str:
         if not hasattr(self, "parsed_content"):
             raise CLBError("先にparseして下さい")
-        assert self.parsed_content is not None
+        assert len(self.parsed_content) > 0
         if pointer >= len(self.parsed_content):
             raise CLBIndexError("不正なindexです")
         return self.parsed_content[pointer]
@@ -41,7 +41,7 @@ class CLBCmdArgLine:
     def get_num_args(self, pointer: int) -> int:
         return len(self.parsed_content) - pointer - 1
 
-    def get_args(self, pointer: int) -> str:
+    def get_args(self, pointer: int) -> List[str]:
         assert self.get_num_args(pointer) >= 0
         return self.parsed_content[pointer + 1:]
 
@@ -98,14 +98,14 @@ class CLBCmdWithSub(CLBCmd):
 class CmdArgBackEnd(CLBBackEnd):
     def __init__(self,
                  rootcmd: CLBCmd,
-                 parser: Callable[[str], Optional[List[str]]] = quote_parser) -> None:
+                 parser: Callable[[str], List[str]] = quote_parser) -> None:
         self._parser = parser
         self._rootcmd = rootcmd
 
     def manage_cmdline(self, cmdline: CLBCmdLine) -> List[Union[CLBTask, List[CLBTask]]]:
         cmdargline = CLBCmdArgLine(cmdline)
         cmdargline.parse(self._parser)
-        if cmdargline.parsed_content is None:
+        if len(cmdargline.parsed_content) == 0:
             return []
         return self._rootcmd.run(cmdargline, -1)
 

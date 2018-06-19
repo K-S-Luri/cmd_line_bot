@@ -4,24 +4,24 @@ from typing import List, Optional, Union
 from clb_error import CLBError
 
 
-def simple_parser(cmdline_content: str) -> Optional[List[str]]:
+def simple_parser(cmdline_content: str) -> List[str]:
     """`!cmd arg1 arg2`
     !で始まり，スペース区切り．
     """
     if not cmdline_content.startswith("!"):
-        return None
+        return []
     parsed = cmdline_content[1:].split()
     if len(parsed) == 0:
         parsed = [""]
     return parsed
 
 
-def quote_parser(cmdline_content: str) -> Optional[List[str]]:
+def quote_parser(cmdline_content: str) -> List[str]:
     """`!cmd arg1 'arg2 with space'
     !で始まり，スペース区切り．quoteもできる
     """
     if not cmdline_content.startswith("!"):
-        return None
+        return []
     parsed = Parser(cmdline_content[1:]).get_parsed()
     if len(parsed) == 0:
         parsed = [""]
