@@ -9,7 +9,7 @@ from clb_data import CLBData
 
 
 class DiscordFrontEnd(CLBFrontEnd):
-    def __init__(self, init_cmd="!init", data_path="~/.clbrc", data_category="discord"):
+    def __init__(self, init_cmd="!init", data_path="~/.clbconfig.json", data_category="discord"):
         self.init_cmd = init_cmd
         # configの準備
         data = CLBData(path=data_path)
@@ -17,8 +17,6 @@ class DiscordFrontEnd(CLBFrontEnd):
         self.config = DiscordConfig(client, data, data_category)
         # tokenの設定
         self.token = self.config.get_token()
-        if self.token is None:
-            raise CLBError("設定ファイル(%s)にtokenを指定してください" % data_path)
         # clientログイン成功時の処理
         client.event(self.on_ready)
 
@@ -99,7 +97,10 @@ class DiscordConfig:
 
     @typechecked
     def get_token(self) -> str:
-        return cast(str, self.data.get(self.data_category, "token"))
+        token = self.data.get(self.data_category, "token")
+        if token is None:
+            raise CLBError("設定ファイル(%s)でtokenを指定してください" % self.data.path)
+        return cast(str, token)
 
     def get_server(self) -> discord.Server:
         if self.server is None:

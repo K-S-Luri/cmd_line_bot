@@ -47,7 +47,7 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
    でbot用のユーザーを作成する
 2. `bot-token`を取得(コピーしておく)
 3. botを自分のチャンネルに追加する
-4. `~/.clbrc` に以下の形のjsonデータを作成
+4. `~/.clbconfig.json` に以下の形のjsonデータを作成
 ```json
 {
     "discord": {
