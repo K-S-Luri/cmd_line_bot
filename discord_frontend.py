@@ -39,7 +39,7 @@ class DiscordFrontEnd(CLBFrontEnd):
                 channelname = None
             cmdline = CLBCmdLine(cmdline_type=cmdline_type, content=msg.content,
                                  author=msg.author.name, channelname=channelname)
-            await callback(cmdline)
+            callback(cmdline)
         except CLBError as e:
             await self.config.reply_to_msg(e.get_msg_to_discord(), msg)
         except Exception as e:
@@ -56,6 +56,7 @@ class DiscordFrontEnd(CLBFrontEnd):
         client.run(self.token)
 
     async def send_msg(self, channelname, text, filename=None):
+        print(list(self.config.client.servers))
         channel = self.config.get_channel_named(channelname)
         if channel is None:
             raise CLBError("チャンネル名が不正です")

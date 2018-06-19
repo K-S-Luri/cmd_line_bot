@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from abc import ABCMeta, abstractmethod
 import asyncio
+from threading import Thread
+from queue import Queue
 from typing import Callable, Coroutine, Any, List, Union, Optional, cast
 from pytypes import typechecked
 
@@ -41,13 +43,89 @@ class CLBBackEnd(metaclass=ABCMeta):
         pass
 
 
-class CmdLineBot:
-    def __init__(self, frontend: CLBFrontEnd, backend: CLBBackEnd) -> None:
+# threads
+class CLBOutputFrontEndThread(Thread):
+    def __init__(self,
+                 frontend: CLBFrontEnd) -> None:
+        super(CLBOutputFrontEndThread, self).__init__()
+        self.setDaemon(True)
         self.frontend = frontend
+        self.queue = Queue()  # type: Queue[Union[CLBTask, List[CLBTask]]]
+
+    def run(self):
+        loop = asyncio.new_event_loop()
+        while True:
+            task_group = self.queue.get()
+            coroutines = []
+            if isinstance(task_group, CLBTask):
+                task_group = [task_group]
+            for task in task_group:
+                if task.type == "msg":
+                    channelname = cast(str, task.channelname)
+                    coroutines.append(self.frontend.send_msg(channelname=channelname,
+                                                             text=task.text,
+                                                             filename=task.filename))
+                elif task.type == "dm":
+                    username = cast(str, task.username)
+                    coroutines.append(self.frontend.send_dm(username=username,
+                                                            text=task.text,
+                                                            filename=task.filename))
+            # await asyncio.gather(*coroutines)
+            loop.run_until_complete(*coroutines)
+            # loop.run_until_complete(self.frontend.send_msg(channelname="general", text="hogeeee", filename=None))
+
+    def put(self,
+            task_group: Union[CLBTask, List[CLBTask]]) -> None:
+        print("put at outputFrontend")
+        self.queue.put(task_group)
+
+
+class CLBBackEndThread(Thread):
+    def __init__(self,
+                 backend: CLBBackEnd,
+                 callback: Callable[[Union[CLBTask, List[CLBTask]]], None]) -> None:
+        super(CLBBackEndThread, self).__init__()
+        self.setDaemon(True)
         self.backend = backend
+        self.queue = Queue()  # type: Queue[CLBCmdLine]
+        self.callback = callback
+
+    def run(self):
+        while True:
+            cmdline = self.queue.get()
+            print("get")
+            tasks = self.backend.manage_cmdline(cmdline)
+            for task_group in tasks:
+                self.callback(task_group)
+
+    def put(self, cmdline: CLBCmdLine) -> None:
+        print("put at backend")
+        self.queue.put(cmdline)
+
+
+class CmdLineBot:
+    def __init__(self,
+                 input_frontend: CLBFrontEnd,
+                 output_frontend: CLBFrontEnd,
+                 backend: CLBBackEnd) -> None:
+        self.frontend = input_frontend
+        self.backend = backend
+        output_frontend.config.client.run(output_frontend.token)
+        self.out_front_thread = CLBOutputFrontEndThread(output_frontend)
+        self.back_thread = CLBBackEndThread(self.backend, self.callback_from_backend)
+
+        threads = [self.out_front_thread, self.back_thread]
+        for thread in threads:
+            thread.start()
 
     def run(self) -> None:
-        self.frontend.run(self.call_backend)
+        self.frontend.run(self.callback_from_inputfrontend)
+
+    def callback_from_inputfrontend(self, cmdline: CLBCmdLine) -> Any:  # 返り値はNoneに直す
+        self.back_thread.put(cmdline)
+
+    def callback_from_backend(self, task_group: Union[CLBTask, List[CLBTask]]) -> None:
+        self.out_front_thread.put(task_group)
 
     async def call_backend(self, cmdline: CLBCmdLine) -> None:
         tasks = self.backend.manage_cmdline(cmdline)

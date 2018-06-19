@@ -8,12 +8,13 @@ from example_backend import example_backend
 def main():
     # frontend
     frontend = MyFrontEnd()
-    frontend = DiscordFrontEnd()
+    input_frontend = DiscordFrontEnd()
+    output_frontend = DiscordFrontEnd()
     # backend
     backend = MyBackEnd()
     backend = example_backend
     # bot
-    bot = CmdLineBot(frontend, backend)
+    bot = CmdLineBot(input_frontend, output_frontend, backend)
     bot.run()
 
 
