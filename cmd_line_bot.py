@@ -10,13 +10,18 @@ from clb_error import CLBError, CLBIndexError
 from clb_interface import CLBTask, CLBCmdLine
 
 
-class CLBFrontEnd(metaclass=ABCMeta):
+class CLBInputFrontEnd(metaclass=ABCMeta):
     def __init__(self):
         pass
 
     @abstractmethod
     def run(self, callback: Callable[[CLBCmdLine],
                                      Coroutine[Any, Any, None]]) -> None:
+        pass
+
+
+class CLBOutputFrontEnd(metaclass=ABCMeta):
+    def __init__(self):
         pass
 
     @abstractmethod
@@ -46,14 +51,14 @@ class CLBBackEnd(metaclass=ABCMeta):
 # threads
 class CLBOutputFrontEndThread(Thread):
     def __init__(self,
-                 frontend: CLBFrontEnd) -> None:
+                 frontend: CLBOutputFrontEnd) -> None:
         super(CLBOutputFrontEndThread, self).__init__()
         self.setDaemon(True)
         self.frontend = frontend
         self.queue = Queue()  # type: Queue[Union[CLBTask, List[CLBTask]]]
 
     def run(self):
-        loop = asyncio.new_event_loop()
+        # loop = asyncio.new_event_loop()
         while True:
             task_group = self.queue.get()
             print("queue of outputFrontend")
@@ -114,10 +119,11 @@ class CLBBackEndThread(Thread):
 
 class CmdLineBot:
     def __init__(self,
-                 input_frontend: CLBFrontEnd,
-                 output_frontend: CLBFrontEnd,
+                 input_frontend: CLBInputFrontEnd,
+                 output_frontend: CLBOutputFrontEnd,
                  backend: CLBBackEnd) -> None:
-        self.frontend = input_frontend
+        self.input_frontend = input_frontend
+        self.output_frontend = output_frontend
         self.backend = backend
         # output_frontend.config.client.run(output_frontend.token)
         self.out_front_thread = CLBOutputFrontEndThread(output_frontend)
@@ -128,7 +134,7 @@ class CmdLineBot:
             thread.start()
 
     def run(self) -> None:
-        self.frontend.run(self.callback_from_inputfrontend)
+        self.input_frontend.run(self.callback_from_inputfrontend)
 
     def callback_from_inputfrontend(self, cmdline: CLBCmdLine) -> Any:  # 返り値はNoneに直す
         self.back_thread.put(cmdline)
@@ -146,12 +152,12 @@ class CmdLineBot:
             for task in task_group:
                 if task.type == "msg":
                     channelname = cast(str, task.channelname)
-                    coroutines.append(self.frontend.send_msg(channelname=channelname,
-                                                             text=task.text,
-                                                             filename=task.filename))
+                    coroutines.append(self.output_frontend.send_msg(channelname=channelname,
+                                                                    text=task.text,
+                                                                    filename=task.filename))
                 elif task.type == "dm":
                     username = cast(str, task.username)
-                    coroutines.append(self.frontend.send_dm(username=username,
-                                                            text=task.text,
-                                                            filename=task.filename))
+                    coroutines.append(self.output_frontend.send_dm(username=username,
+                                                                   text=task.text,
+                                                                   filename=task.filename))
             await asyncio.gather(*coroutines)

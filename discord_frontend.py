@@ -3,22 +3,17 @@ from typing import cast, Optional
 from pytypes import typechecked
 
 import discord
-from cmd_line_bot import CLBFrontEnd, CLBCmdLine
+from cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBCmdLine
 from clb_error import CLBError
 from clb_data import CLBData
 
 
-class DiscordFrontEnd(CLBFrontEnd):
-    def __init__(self, init_cmd="!init", data_path="~/.clbconfig.json", data_category="discord"):
+class DiscordInputFrontEnd(CLBInputFrontEnd):
+    def __init__(self, config, init_cmd="!init"):
+        self.config = config
         self.init_cmd = init_cmd
-        # configの準備
-        data = CLBData(path=data_path)
-        client = discord.Client()
-        self.config = DiscordConfig(client, data, data_category)
-        # tokenの設定
-        self.token = self.config.get_token()
         # clientログイン成功時の処理
-        client.event(self.on_ready)
+        config.client.event(self.on_ready)
 
     async def on_ready(self):
         client = self.config.client
@@ -53,7 +48,21 @@ class DiscordFrontEnd(CLBFrontEnd):
         @client.event
         async def on_message(msg):
             await self.on_message(callback, msg)
-        client.run(self.token)
+        token = self.config.get_token()
+        client.run(token)
+
+    async def init_client(self, msg):
+        if msg.server is None:
+            raise CLBError("`%s`は(DMではなく，サーバー内の)テキストチャンネルに送信してください" % self.init_cmd)
+        print("[Initialize client]\nServer: %s" % msg.server)
+        self.config.set_server(msg.server)
+        self.config.save()
+        await self.config.reply_to_msg("initしました", msg)
+
+
+class DiscordOutputFrontEnd(CLBOutputFrontEnd):
+    def __init__(self, config):
+        self.config = config
 
     async def send_msg(self, channelname, text, filename=None):
         print(list(self.config.client.servers))
@@ -76,13 +85,16 @@ class DiscordFrontEnd(CLBFrontEnd):
         else:
             await client.send_file(destination=user, fp=filename, content=text)
 
-    async def init_client(self, msg):
-        if msg.server is None:
-            raise CLBError("`%s`は(DMではなく，サーバー内の)テキストチャンネルに送信してください" % self.init_cmd)
-        print("[Initialize client]\nServer: %s" % msg.server)
-        self.config.set_server(msg.server)
-        self.config.save()
-        await self.config.reply_to_msg("initしました", msg)
+
+class DiscordFrontEnd:
+    def __init__(self, init_cmd="!init", data_path="~/.clbconfig.json", data_category="discord"):
+        # configの準備
+        data = CLBData(path=data_path)
+        client = discord.Client()
+        self.config = DiscordConfig(client, data, data_category)
+        # input/output frontendの作成
+        self.input_frontend = DiscordInputFrontEnd(self.config, init_cmd)
+        self.output_frontend = DiscordOutputFrontEnd(self.config)
 
 
 class DiscordConfig:
