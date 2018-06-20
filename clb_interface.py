@@ -1,9 +1,10 @@
 from typing import Optional
+from abc import ABCMeta, abstractmethod
 
 
 # API用のクラス
-class CLBCmdLine:
-    # CLBTaskと同じく，msg と dm で分けてサブクラスを作る？
+class CLBCmdLine(metaclass=ABCMeta):
+    @abstractmethod
     def __init__(self,
                  content: str,
                  author: str) -> None:
