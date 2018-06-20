@@ -24,24 +24,17 @@ class DiscordInputFrontEnd(CLBInputFrontEnd):
         print("------")
 
     async def on_message(self, callback, msg):
-        try:
-            if msg.content == self.init_cmd:
-                await self.init_client(msg)
-            if isinstance(msg.channel, discord.Channel):
-                cmdline_type = "msg"
-                channelname = msg.channel.name
-            elif isinstance(msg.channel, discord.PrivateChannel):
-                cmdline_type = "dm"
-                channelname = None
-            cmdline = CLBCmdLine(cmdline_type=cmdline_type, content=msg.content,
-                                 author=msg.author.name, channelname=channelname)
-            callback(cmdline)
-        except CLBError as e:
-            await self.config.reply_to_msg(e.get_msg_to_discord(), msg)
-        except Exception as e:
-            import traceback
-            await self.config.reply_to_msg(traceback.format_exc(), msg)
-            raise e
+        if msg.content == self.init_cmd:
+            await self.init_client(msg)
+        if isinstance(msg.channel, discord.Channel):
+            cmdline_type = "msg"
+            channelname = msg.channel.name
+        elif isinstance(msg.channel, discord.PrivateChannel):
+            cmdline_type = "dm"
+            channelname = None
+        cmdline = CLBCmdLine(cmdline_type=cmdline_type, content=msg.content,
+                             author=msg.author.name, channelname=channelname)
+        callback(cmdline)
 
     def run(self, callback):
         client = self.config.client
