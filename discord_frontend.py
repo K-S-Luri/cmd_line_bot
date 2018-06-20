@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import cast, Optional, Callable, Any
+from typing import cast, Optional, Callable, Any, List
 from pytypes import typechecked
 import asyncio
 from threading import Thread
@@ -90,6 +90,15 @@ class DiscordConfig:
         self._trying_login = False
         return
 
+    def get_channelnames(self) -> List[str]:
+        if self.server is None:
+            return []
+        server = cast(discord.Server, self.server)
+        channels = server.channels
+        return list(map(lambda c: c.name,
+                        filter(lambda c: c.type == discord.ChannelType.text,
+                               channels)))
+
 
 # frontend
 class DiscordInputFrontEnd(CLBInputFrontEnd):
@@ -157,7 +166,7 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
     def send_msg(self,
                  channelname: str,
                  text: Optional[str],
-                 filename: Optional[str]) -> None:
+                 filename: Optional[str] = None) -> None:
         self.config.run_client()
         coro = self._send_msg(channelname=channelname, text=text, filename=filename)
         loop = self.config.client.loop
@@ -166,7 +175,7 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
     def send_dm(self,
                 username: str,
                 text: Optional[str],
-                filename: Optional[str]) -> None:
+                filename: Optional[str] = None) -> None:
         self.config.run_client()
         coro = self._send_dm(username=username, text=text, filename=filename)
         loop = self.config.client.loop
@@ -175,7 +184,8 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
     async def _send_msg(self, channelname, text, filename=None):
         channel = self.config.get_channel_named(channelname)
         if channel is None:
-            raise CLBError("チャンネル名が不正です")
+            error_msg = "チャンネル名(%s)が不正です\nchannels: %s" % (channelname, self.config.get_channelnames())
+            raise CLBError(error_msg)
         client = self.config.client
         if filename is None:
             await client.send_message(destination=channel, content=text)

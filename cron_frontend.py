@@ -41,5 +41,5 @@ def cron_example() -> CronInputFrontEnd:
                          content="!time",
                          author="wktkshn",
                          channelname="general")
-    job = CronJob(cmdline=cmdline, second=3)
+    job = CronJob(cmdline=cmdline, second=10)
     return CronInputFrontEnd([job])

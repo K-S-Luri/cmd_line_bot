@@ -29,7 +29,7 @@ class Cmd_Msg(CLBCmd):
             raise CLBError("引数が多すぎます")
         name, text = cmdargline.get_args(pointer)
         tasks = []
-        tasks.append(CLBTask(tasktype="msg", channelname=name, text=text))
+        tasks.append(CLBTask(tasktype="msg", channelname=name, text=text, cmdline=cmdargline.cmdline))
         return tasks
 
 
@@ -46,7 +46,7 @@ class Cmd_Dm(CLBCmd):
             raise CLBError("引数が多すぎます")
         name, text = cmdargline.get_args(pointer)
         tasks = []
-        tasks.append(CLBTask(tasktype="dm", username=name, text=text))
+        tasks.append(CLBTask(tasktype="dm", username=name, text=text, cmdline=cmdargline.cmdline))
         return tasks
 
 
@@ -63,7 +63,8 @@ class Cmd_File(CLBCmd):
             raise CLBError("引数が多すぎます")
         name, text = cmdargline.get_args(pointer)
         tasks = []
-        tasks.append(CLBTask(tasktype="msg", channelname=name, text=text, filename="dice.png"))
+        tasks.append(CLBTask(tasktype="msg", channelname=name, text=text,
+                             filename="dice.png", cmdline=cmdargline.cmdline))
         return tasks
 
 

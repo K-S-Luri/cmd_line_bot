@@ -96,16 +96,37 @@ class CLBOutputFrontEndThread(Thread):
             if len(task_group) >= 2:
                 print("複数メッセージの並列送信はまだ対応してないよ")
             for task in task_group:
-                if task.type == "msg":
-                    channelname = cast(str, task.channelname)
-                    self.output_frontend.send_msg(channelname=channelname,
-                                                  text=task.text,
-                                                  filename=task.filename)
-                elif task.type == "dm":
-                    username = cast(str, task.username)
-                    self.output_frontend.send_dm(username=username,
-                                                 text=task.text,
-                                                 filename=task.filename)
+                try:
+                    if task.type == "msg":
+                        channelname = cast(str, task.channelname)
+                        self.output_frontend.send_msg(channelname=channelname,
+                                                      text=task.text,
+                                                      filename=task.filename)
+                    elif task.type == "dm":
+                        username = cast(str, task.username)
+                        self.output_frontend.send_dm(username=username,
+                                                     text=task.text,
+                                                     filename=task.filename)
+                except CLBError as e:
+                    try:
+                        cmdline = task.cmdline
+                        if cmdline is None:
+                            raise CLBError("cmdlineがNoneです")
+                        error_msg = e.get_msg_to_discord()
+                        if cmdline.type == "msg":
+                            channelname = cast(str, cmdline.channelname)
+                            self.output_frontend.send_msg(channelname=channelname,
+                                                          text=error_msg)
+                        elif cmdline.type == "dm":
+                            username = cast(str, cmdline.author)
+                            self.output_frontend.send_dm(username=username,
+                                                         text=error_msg)
+                    except CLBError as e_:
+                        print("%sをfrontendに送信する過程でエラー1が発生し，" % task)
+                        print("さらにエラー1の情報をfrontendに送信する過程でエラー2が発生しました")
+                        print("[エラー1]", e.get_msg_to_discord())
+                        print("[エラー2]", e_.get_msg_to_discord())
+                        print(traceback.format_exc())
 
     def put(self,
             task_group: Union[CLBTask, List[CLBTask]]) -> None:

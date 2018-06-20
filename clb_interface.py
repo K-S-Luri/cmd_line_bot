@@ -2,25 +2,6 @@ from typing import Optional
 
 
 # API用のクラス
-class CLBTask:
-    # msg と dm で分けてサブクラスを作った方が良いかも
-    def __init__(self, tasktype: str,
-                 username: Optional[str] = None,
-                 channelname: Optional[str] = None,
-                 text: Optional[str] = None,
-                 filename: Optional[str] = None) -> None:
-        self.type = tasktype
-        self.username = username
-        self.channelname = channelname
-        self.text = text
-        self.filename = filename
-
-
-class CLBDummyTask(CLBTask):
-    def __init__(self):
-        pass
-
-
 class CLBCmdLine:
     # CLBTaskと同じく，msg と dm で分けてサブクラスを作る？
     def __init__(self, cmdline_type: str,
@@ -43,6 +24,27 @@ class CLBDummyCmdLine(CLBCmdLine):
         pass
 
 
+class CLBTask:
+    # msg と dm で分けてサブクラスを作った方が良いかも
+    def __init__(self, tasktype: str,
+                 username: Optional[str] = None,
+                 channelname: Optional[str] = None,
+                 text: Optional[str] = None,
+                 filename: Optional[str] = None,
+                 cmdline: Optional[CLBCmdLine] = None) -> None:
+        self.type = tasktype
+        self.username = username
+        self.channelname = channelname
+        self.text = text
+        self.filename = filename
+        self.cmdline = cmdline
+
+
+class CLBDummyTask(CLBTask):
+    def __init__(self):
+        pass
+
+
 # utilities
 def create_reply_task(cmdline: CLBCmdLine,
                       text: Optional[str] = None,
@@ -50,8 +52,8 @@ def create_reply_task(cmdline: CLBCmdLine,
     tasktype = cmdline.type
     if tasktype == "msg":
         channelname = cmdline.channelname
-        task = CLBTask(tasktype=tasktype, channelname=channelname, text=text, filename=filename)
+        task = CLBTask(tasktype=tasktype, channelname=channelname, text=text, filename=filename, cmdline=cmdline)
     elif tasktype == "dm":
         author = cmdline.author
-        task = CLBTask(tasktype=tasktype, username=author, text=text, filename=filename)
+        task = CLBTask(tasktype=tasktype, username=author, text=text, filename=filename, cmdline=cmdline)
     return task
