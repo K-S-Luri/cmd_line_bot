@@ -147,8 +147,6 @@ class DiscordInputFrontEnd(CLBInputFrontEnd):
         @client.event
         async def on_message(msg):
             await self.on_message(callback, msg)
-        token = self.config.get_token()
-        # client.run(token)
         self.config.run_client()
 
     async def init_client(self,
