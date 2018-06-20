@@ -31,3 +31,17 @@ class CLBCmdLine:
         self.content = content
         self.author = author
         self.channelname = channelname
+
+
+# utilities
+def create_reply_task(cmdline: CLBCmdLine,
+                      text: Optional[str] = None,
+                      filename: Optional[str] = None) -> CLBTask:
+    tasktype = cmdline.type
+    if tasktype == "msg":
+        channelname = cmdline.channelname
+        task = CLBTask(tasktype=tasktype, channelname=channelname, text=text, filename=filename)
+    elif tasktype == "dm":
+        author = cmdline.author
+        task = CLBTask(tasktype=tasktype, username=author, text=text, filename=filename)
+    return task

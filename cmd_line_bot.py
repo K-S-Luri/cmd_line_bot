@@ -5,9 +5,10 @@ from threading import Thread
 from queue import Queue
 from typing import Callable, Coroutine, Any, List, Union, Optional, cast
 from pytypes import typechecked
+import traceback
 
 from clb_error import CLBError, CLBIndexError
-from clb_interface import CLBTask, CLBCmdLine
+from clb_interface import CLBTask, CLBCmdLine, create_reply_task
 
 
 class CLBInputFrontEnd(metaclass=ABCMeta):
@@ -96,9 +97,25 @@ class CLBBackEndThread(Thread):
     def run(self):
         while True:
             cmdline = self.queue.get()
-            tasks = self.backend.manage_cmdline(cmdline)
-            for task_group in tasks:
-                self.callback(task_group)
+            try:
+                tasks = self.backend.manage_cmdline(cmdline)
+                for task_group in tasks:
+                    self.callback(task_group)
+            except CLBError as e:
+                error_msg = e.get_msg_to_discord()
+                task = create_reply_task(cmdline=cmdline, text=error_msg, filename=None)
+                self.callback(task)
+                # print(error_msg)
+            except Exception as e:
+                error_msg = traceback.format_exc()
+                task = create_reply_task(cmdline=cmdline, text=error_msg, filename=None)
+                self.callback(task)
+                if cmdline.type == "msg":
+                    info = "msg from %s in %s" % (cmdline.author, cmdline.channelname)
+                elif cmdline.type == "dm":
+                    info = "dm from %s" % cmdline.author
+                print("[%s] %s" % (info, cmdline.content))
+                print(error_msg)
 
     def put(self, cmdline: CLBCmdLine) -> None:
         self.queue.put(cmdline)
