@@ -10,11 +10,10 @@ class TrivialInputFrontEnd(CLBInputFrontEnd):
     def run(self, callback):
         print("This is TrivialInputFrontEnd")
         # loop = asyncio.get_event_loop()
-        contents = ["!dm user1 private", "!msg ch1 open", "!file ch2 hoge"]
+        contents = ["!dm wktkshn 'private msg'", "!msg general hogeeeee", "!file general fugafuga"]
         for content in contents:
             cmdline = CLBCmdLine(cmdline_type="msg", content=content, author="bourbaki", channelname="mychannel")
             callback(cmdline)
-            # loop.run_until_complete(callback(cmdline))
 
     def kill(self):
         pass
@@ -34,6 +33,9 @@ class TrivialOutputFrontEnd(CLBOutputFrontEnd):
         else:
             fileinfo = " attached: %s" % filename
         print(linesep + "<DM@%s>%s\n%s" % (username, fileinfo, text))
+
+    def kill(self):
+        pass
 
 
 class TrivialBackEnd(CLBBackEnd):
@@ -58,3 +60,6 @@ class TrivialBackEnd(CLBBackEnd):
         if not cmdline.startswith("!"):
             return None
         return cmdline[1:].split()
+
+    def kill(self):
+        pass
