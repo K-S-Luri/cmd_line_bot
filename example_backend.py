@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from cmd_line_bot import CLBTask
-from cmd_arg_backend import CmdArgBackEnd, CLBCmd, CLBCmdWithSub, CLBCmdArgLine, create_reply_task
+from cmd_arg_backend import CmdArgBackEnd, CLBCmd, CLBCmdWithSub, CLBCmdArgLine  # , create_reply_task
+from clb_interface import create_reply_task
 from clb_error import CLBError
 
 
@@ -75,7 +76,7 @@ class Cmd_Reply(CLBCmd):
             raise CLBError("引数の個数が不正です")
         text = cmdargline.get_args(pointer)[0]
         tasks = []
-        tasks.append(create_reply_task(cmdargline, text=text))
+        tasks.append(create_reply_task(cmdargline.cmdline, text=text))
         return tasks
 
 

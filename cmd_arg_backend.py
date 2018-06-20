@@ -11,20 +11,20 @@ from parser import quote_parser
 # API用のクラスを拡張
 class CLBCmdArgLine:
     def __init__(self, cmdline: CLBCmdLine) -> None:
-        self._cmdline = cmdline
+        self.cmdline = cmdline
 
     def get_type(self) -> str:
-        return self._cmdline.type
+        return self.cmdline.type
 
     def get_author(self) -> str:
-        return self._cmdline.author
+        return self.cmdline.author
 
     def get_channelname(self) -> Optional[str]:
-        return self._cmdline.channelname
+        return self.cmdline.channelname
 
     def parse(self,
               parser: Callable[[str], List[str]]) -> None:
-        self.parsed_content = parser(self._cmdline.content)
+        self.parsed_content = parser(self.cmdline.content)
         if len(self.parsed_content) == 0:
             return
         assert isinstance(self.parsed_content, list)
@@ -108,19 +108,3 @@ class CmdArgBackEnd(CLBBackEnd):
         if len(cmdargline.parsed_content) == 0:
             return []
         return self._rootcmd.run(cmdargline, -1)
-
-
-# utilities
-def create_reply_task(cmdargline: CLBCmdArgLine,
-                      text: Optional[str] = None,
-                      filename: Optional[str] = None) -> CLBTask:
-    tasktype = cmdargline.get_type()
-    if tasktype == "msg":
-        channelname = cmdargline.get_channelname()
-        task = CLBTask(tasktype=tasktype, channelname=channelname, text=text, filename=filename)
-    elif tasktype == "dm":
-        author = cmdargline.get_author()
-        task = CLBTask(tasktype=tasktype, username=author, text=text, filename=filename)
-    else:
-        raise CLBError("Invalid tasktype")
-    return task
