@@ -192,11 +192,8 @@ class CmdLineBot:
         except KeyboardInterrupt:
             for thread in self.threads:
                 thread.kill()
-            # self.input_frontend_thread.kill()
-            # self.output_frontend_thread.kill()
-            # self.backend_thread.kill()
 
-    def callback_from_inputfrontend(self, cmdline: CLBCmdLine) -> Any:  # 返り値はNoneに直す
+    def callback_from_inputfrontend(self, cmdline: CLBCmdLine) -> None:
         self.backend_thread.put(cmdline)
 
     def callback_from_backend(self, task_group: Union[CLBTask, List[CLBTask]]) -> None:
