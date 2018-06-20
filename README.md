@@ -66,6 +66,9 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 
 # TODO
 ## 大きなやつ
+- テスト用のフロントエンドを追加
+  * terminalから入力を受け付けるinput frontend
+  * 予め与えた入力を順に送信するinput frontend
 - バチャコン機能
 
 ## 細かいやつ
@@ -76,5 +79,4 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 - `json`から読みとったデータを利用する際は，(特に実行時の)型チェックに気を使った方が良さそう．
   →`@typechecked`を利用する？
 - `isinstance`はなるべく排除し，`@typechecked`を利用する．
-- チャンネル名が不正だったときのエラーメッセージが，terminal上にしか出てこない
 - `CmdLineBot.run()`で`sleep(10)`してるの，もうちょっとどうにかならない？
