@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 # import asyncio
 from threading import Thread
 from queue import Queue
-from typing import Callable, Coroutine, Any, List, Union, Optional, cast
+from typing import Callable, Any, List, Union, Optional, cast
 # from pytypes import typechecked
 import traceback
 
@@ -16,8 +16,7 @@ class CLBInputFrontEnd(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def run(self, callback: Callable[[CLBCmdLine],
-                                     Coroutine[Any, Any, None]]) -> None:
+    def run(self, callback: Callable[[CLBCmdLine], None]) -> None:
         pass
 
 
