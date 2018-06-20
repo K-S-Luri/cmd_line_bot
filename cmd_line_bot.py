@@ -167,21 +167,21 @@ class CmdLineBot:
                  input_frontend: CLBInputFrontEnd,
                  output_frontend: CLBOutputFrontEnd,
                  backend: CLBBackEnd) -> None:
+        # ends
         self.input_frontend = input_frontend
         self.output_frontend = output_frontend
         self.backend = backend
-        # output_frontend.config.client.run(output_frontend.token)
+        # threads
+        self.input_frontend_thread = CLBInputFrontEndThread(self.input_frontend, self.callback_from_inputfrontend)
         self.output_frontend_thread = CLBOutputFrontEndThread(output_frontend)
         self.backend_thread = CLBBackEndThread(self.backend, self.callback_from_backend)
-
-        threads = [self.output_frontend_thread, self.backend_thread]
-        for thread in threads:
-            thread.start()
+        self.threads = [self.input_frontend_thread,
+                        self.output_frontend_thread,
+                        self.backend_thread]
 
     def run(self) -> None:
-        # self.input_frontend.run(self.callback_from_inputfrontend)
-        self.input_frontend_thread = CLBInputFrontEndThread(self.input_frontend, self.callback_from_inputfrontend)
-        self.input_frontend_thread.start()
+        for thread in self.threads:
+            thread.start()
         import time
         try:
             while True:
