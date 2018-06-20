@@ -21,6 +21,7 @@ class DiscordConfig:
         self.data_category = data_category
         self.data.add_category(data_category)
         self.server = None  # type: Optional[discord.Server]
+        self._trying_login = False
 
     @typechecked
     def get_token(self) -> str:
@@ -76,11 +77,17 @@ class DiscordConfig:
         client = self.client
         if client.is_logged_in:
             return
+        if self._trying_login:
+            asyncio.run_coroutine_threadsafe(client.wait_until_ready(),
+                                             client.loop).result()
+            return
+        self._trying_login = True
         token = self.get_token()
         thread = Thread(target=client.run, args=(token,))
         thread.start()
         asyncio.run_coroutine_threadsafe(client.wait_until_ready(),
                                          client.loop).result()
+        self._trying_login = False
         return
 
 
@@ -124,7 +131,8 @@ class DiscordInputFrontEnd(CLBInputFrontEnd):
         async def on_message(msg):
             await self.on_message(callback, msg)
         token = self.config.get_token()
-        client.run(token)
+        # client.run(token)
+        self.config.run_client()
 
     async def init_client(self,
                           msg: discord.Message) -> Any:  # 本当は返り値はCoroutineだけど，python3.5では未実装

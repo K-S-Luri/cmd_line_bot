@@ -3,6 +3,7 @@ from cmd_line_bot import CLBTask
 from cmd_arg_backend import CmdArgBackEnd, CLBCmd, CLBCmdWithSub, CLBCmdArgLine  # , create_reply_task
 from clb_interface import create_reply_task
 from clb_error import CLBError
+from datetime import datetime
 
 
 class RootCmd(CLBCmdWithSub):
@@ -11,7 +12,8 @@ class RootCmd(CLBCmdWithSub):
         self._subcmds = [Cmd_Msg(),
                          Cmd_Dm(),
                          Cmd_File(),
-                         Cmd_Reply()]
+                         Cmd_Reply(),
+                         Cmd_Time()]
 
 
 class Cmd_Msg(CLBCmd):
@@ -77,6 +79,17 @@ class Cmd_Reply(CLBCmd):
         text = cmdargline.get_args(pointer)[0]
         tasks = []
         tasks.append(create_reply_task(cmdargline.cmdline, text=text))
+        return tasks
+
+
+class Cmd_Time(CLBCmd):
+    def __init__(self):
+        self._keys = ["time", "t"]
+        self._documentation = "現在時刻を表示する"
+
+    def run(self, cmdargline, pointer):
+        text = datetime.now().strftime("%H:%M:%S")
+        tasks = [create_reply_task(cmdargline.cmdline, text=text)]
         return tasks
 
 
