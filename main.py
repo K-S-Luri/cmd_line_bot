@@ -7,11 +7,12 @@ from example_backend import example_backend
 
 def main():
     # frontend
-    # input_frontend, output_frontend = TrivialInputFrontEnd(), TrivialOutputFrontEnd()
+    input_frontend, output_frontend = TrivialInputFrontEnd(), TrivialOutputFrontEnd()
     d = DiscordFrontEnd()
-    input_frontend, output_frontend = d.input_frontend, d.output_frontend
+    # input_frontend = d.input_frontend
+    output_frontend = d.output_frontend
     # backend
-    # backend = TrivialBackEnd()
+    backend = TrivialBackEnd()
     backend = example_backend
     # bot
     bot = CmdLineBot(input_frontend, output_frontend, backend)

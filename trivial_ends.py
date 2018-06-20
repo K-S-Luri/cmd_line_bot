@@ -10,7 +10,7 @@ class TrivialInputFrontEnd(CLBInputFrontEnd):
     def run(self, callback):
         print("This is TrivialInputFrontEnd")
         # loop = asyncio.get_event_loop()
-        contents = ["!dm wktkshn 'private msg'", "!msg general hogeeeee", "!file general fugafuga"]
+        contents = ["!dm wktkshn private", "!msg general hogeeeee", "!file general fugafuga"]
         for content in contents:
             cmdline = CLBCmdLine(cmdline_type="msg", content=content, author="bourbaki", channelname="mychannel")
             callback(cmdline)

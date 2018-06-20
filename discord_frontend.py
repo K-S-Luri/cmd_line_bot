@@ -2,6 +2,8 @@
 from typing import cast, Optional, Callable, Any
 from pytypes import typechecked
 import asyncio
+from threading import Thread
+from time import sleep
 
 import discord
 from cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBCmdLine
@@ -70,6 +72,17 @@ class DiscordConfig:
     def save(self):
         self.data.save()
 
+    def run_client(self) -> None:
+        client = self.client
+        if client.is_logged_in:
+            return
+        token = self.get_token()
+        thread = Thread(target=client.run, args=(token,))
+        thread.start()
+        asyncio.run_coroutine_threadsafe(client.wait_until_ready(),
+                                         client.loop).result()
+        return
+
 
 # frontend
 class DiscordInputFrontEnd(CLBInputFrontEnd):
@@ -137,6 +150,7 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
                  channelname: str,
                  text: Optional[str],
                  filename: Optional[str]) -> None:
+        self.config.run_client()
         coro = self._send_msg(channelname=channelname, text=text, filename=filename)
         loop = self.config.client.loop
         asyncio.run_coroutine_threadsafe(coro, loop).result()  # .result()をつけて，完了するまで待っている
@@ -145,6 +159,7 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
                 username: str,
                 text: Optional[str],
                 filename: Optional[str]) -> None:
+        self.config.run_client()
         coro = self._send_dm(username=username, text=text, filename=filename)
         loop = self.config.client.loop
         asyncio.run_coroutine_threadsafe(coro, loop).result()
