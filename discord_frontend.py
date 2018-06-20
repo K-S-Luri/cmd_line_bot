@@ -99,6 +99,14 @@ class DiscordConfig:
                         filter(lambda c: c.type == discord.ChannelType.text,
                                channels)))
 
+    def get_usernames(self) -> List[str]:
+        if self.server is None:
+            return []
+        server = cast(discord.Server, self.server)
+        users = server.members
+        return list(map(lambda u: u.name,
+                        users))
+
 
 # frontend
 class DiscordInputFrontEnd(CLBInputFrontEnd):
@@ -195,7 +203,8 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
     async def _send_dm(self, username, text, filename=None):
         user = self.config.get_user_named(username)
         if user is None:
-            raise CLBError("ユーザー名が不正です")
+            error_msg = "ユーザー名(%s)が不正です\nusers: %s" % (username, self.config.get_usernames())
+            raise CLBError(error_msg)
         client = self.config.client
         if filename is None:
             await client.send_message(destination=user, content=text)
