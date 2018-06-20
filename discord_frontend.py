@@ -7,7 +7,8 @@ from time import sleep
 
 import discord
 from cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd
-from clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM
+from clb_interface import (CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM,
+                           CLBTask, CLBTask_Msg, CLBTask_DM)
 from clb_error import CLBError
 from clb_data import CLBData
 
@@ -168,6 +169,19 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
     def __init__(self,
                  config: DiscordConfig) -> None:
         self.config = config
+
+    def send(self,
+             task: CLBTask) -> None:
+        if isinstance(task, CLBTask_Msg):
+            channelname = cast(str, task.channelname)
+            self.send_msg(channelname=channelname,
+                          text=task.text,
+                          filename=task.filename)
+        elif isinstance(task, CLBTask_DM):
+            username = cast(str, task.username)
+            self.send_dm(username=username,
+                         text=task.text,
+                         filename=task.filename)
 
     def send_msg(self,
                  channelname: str,

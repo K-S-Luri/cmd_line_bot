@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
 from cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBBackEnd, CLBTask
-from clb_interface import CLBCmdLine, CLBCmdLine_Msg
+from clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBTask_Msg, CLBTask_DM
 from time import sleep
 
 linesep = "----------\n"
@@ -21,6 +21,16 @@ class TrivialInputFrontEnd(CLBInputFrontEnd):
 
 
 class TrivialOutputFrontEnd(CLBOutputFrontEnd):
+    def send(self, task):
+        if isinstance(task, CLBTask_Msg):
+            self.send_msg(channelname=task.channelname,
+                          text=task.text,
+                          filename=task.filename)
+        elif isinstance(task, CLBTask_DM):
+            self.send_dm(username=task.username,
+                         text=task.text,
+                         filename=task.filename)
+
     def send_msg(self, channelname, text, filename=None):
         if filename is None:
             fileinfo = ""

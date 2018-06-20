@@ -30,18 +30,23 @@ class CLBOutputFrontEnd(metaclass=ABCMeta):
     def __init__(self):
         pass
 
-    @abstractmethod
-    def send_msg(self,
-                 channelname: str,
-                 text: Optional[str],
-                 filename: Optional[str]) -> None:
-        pass
+    # @abstractmethod
+    # def send_msg(self,
+    #              channelname: str,
+    #              text: Optional[str],
+    #              filename: Optional[str]) -> None:
+    #     pass
+
+    # @abstractmethod
+    # def send_dm(self,
+    #             username: str,
+    #             text: Optional[str],
+    #             filename: Optional[str]) -> None:
+    #     pass
 
     @abstractmethod
-    def send_dm(self,
-                username: str,
-                text: Optional[str],
-                filename: Optional[str]) -> None:
+    def send(self,
+             task: CLBTask) -> None:
         pass
 
     @abstractmethod
@@ -99,16 +104,7 @@ class CLBOutputFrontEndThread(Thread):
                 print("複数メッセージの並列送信はまだ対応してないよ")
             for task in task_group:
                 try:
-                    if isinstance(task, CLBTask_Msg):
-                        channelname = cast(str, task.channelname)
-                        self.output_frontend.send_msg(channelname=channelname,
-                                                      text=task.text,
-                                                      filename=task.filename)
-                    elif isinstance(task, CLBTask_DM):
-                        username = cast(str, task.username)
-                        self.output_frontend.send_dm(username=username,
-                                                     text=task.text,
-                                                     filename=task.filename)
+                    self.output_frontend.send(task)
                 except CLBError as e:
                     try:
                         cmdline = task.cmdline
@@ -117,12 +113,13 @@ class CLBOutputFrontEndThread(Thread):
                         error_msg = e.get_msg_to_discord()
                         if isinstance(cmdline, CLBCmdLine_Msg):
                             channelname = cast(str, cmdline.channelname)
-                            self.output_frontend.send_msg(channelname=channelname,
-                                                          text=error_msg)
+                            task = CLBTask_Msg(channelname=channelname,
+                                               text=error_msg)
                         elif isinstance(cmdline, CLBCmdLine_DM):
                             username = cast(str, cmdline.author)
-                            self.output_frontend.send_dm(username=username,
-                                                         text=error_msg)
+                            task = CLBTask_DM(username=username,
+                                              text=error_msg)
+                        self.output_frontend.send(task)
                     except CLBError as e_:
                         print("%sをfrontendに送信する過程でエラー1が発生し，" % task)
                         print("さらにエラー1の情報をfrontendに送信する過程でエラー2が発生しました")
