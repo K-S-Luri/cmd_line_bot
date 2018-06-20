@@ -14,9 +14,6 @@ from clb_interface import (CLBTask, CLBTask_Msg, CLBTask_DM, CLBDummyTask,
 
 
 class CLBInputFrontEnd(metaclass=ABCMeta):
-    def __init__(self):
-        pass
-
     @abstractmethod
     def run(self, callback: Callable[[CLBCmdLine], None]) -> None:
         pass
@@ -27,9 +24,6 @@ class CLBInputFrontEnd(metaclass=ABCMeta):
 
 
 class CLBOutputFrontEnd(metaclass=ABCMeta):
-    def __init__(self):
-        pass
-
     @abstractmethod
     def send_msg(self,
                  channelname: str,
@@ -61,9 +55,6 @@ class CLBOutputFrontEnd(metaclass=ABCMeta):
 
 
 class CLBBackEnd(metaclass=ABCMeta):
-    def __init__(self):
-        pass
-
     @abstractmethod
     def manage_cmdline(self, cmdline: CLBCmdLine) -> List[Union[CLBTask, List[CLBTask]]]:
         pass
