@@ -21,16 +21,6 @@ class TrivialInputFrontEnd(CLBInputFrontEnd):
 
 
 class TrivialOutputFrontEnd(CLBOutputFrontEnd):
-    def send(self, task):
-        if isinstance(task, CLBTask_Msg):
-            self.send_msg(channelname=task.channelname,
-                          text=task.text,
-                          filename=task.filename)
-        elif isinstance(task, CLBTask_DM):
-            self.send_dm(username=task.username,
-                         text=task.text,
-                         filename=task.filename)
-
     def send_msg(self, channelname, text, filename=None):
         if filename is None:
             fileinfo = ""

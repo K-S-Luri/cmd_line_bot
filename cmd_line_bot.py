@@ -30,24 +30,30 @@ class CLBOutputFrontEnd(metaclass=ABCMeta):
     def __init__(self):
         pass
 
-    # @abstractmethod
-    # def send_msg(self,
-    #              channelname: str,
-    #              text: Optional[str],
-    #              filename: Optional[str]) -> None:
-    #     pass
-
-    # @abstractmethod
-    # def send_dm(self,
-    #             username: str,
-    #             text: Optional[str],
-    #             filename: Optional[str]) -> None:
-    #     pass
+    @abstractmethod
+    def send_msg(self,
+                 channelname: str,
+                 text: Optional[str],
+                 filename: Optional[str]) -> None:
+        pass
 
     @abstractmethod
+    def send_dm(self,
+                username: str,
+                text: Optional[str],
+                filename: Optional[str]) -> None:
+        pass
+
     def send(self,
              task: CLBTask) -> None:
-        pass
+        if isinstance(task, CLBTask_Msg):
+            self.send_msg(channelname=task.channelname,
+                          text=task.text,
+                          filename=task.filename)
+        elif isinstance(task, CLBTask_DM):
+            self.send_dm(username=task.username,
+                         text=task.text,
+                         filename=task.filename)
 
     @abstractmethod
     def kill(self) -> None:
