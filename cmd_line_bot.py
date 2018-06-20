@@ -164,20 +164,23 @@ class CLBBackEndThread(Thread):
 
 class CmdLineBot:
     def __init__(self,
-                 input_frontend: CLBInputFrontEnd,
+                 input_frontend: Union[CLBInputFrontEnd, List[CLBInputFrontEnd]],
                  output_frontend: CLBOutputFrontEnd,
                  backend: CLBBackEnd) -> None:
         # ends
-        self.input_frontend = input_frontend
+        if isinstance(input_frontend, CLBInputFrontEnd):
+            input_frontend = [input_frontend]
+        self.input_frontends = input_frontend
         self.output_frontend = output_frontend
         self.backend = backend
         # threads
-        self.input_frontend_thread = CLBInputFrontEndThread(self.input_frontend, self.callback_from_inputfrontend)
+        def create_ifet(ife):
+            return CLBInputFrontEndThread(ife, self.callback_from_inputfrontend)
+        self.input_frontend_threads = list(map(create_ifet, self.input_frontends))
         self.output_frontend_thread = CLBOutputFrontEndThread(output_frontend)
         self.backend_thread = CLBBackEndThread(self.backend, self.callback_from_backend)
-        self.threads = [self.input_frontend_thread,
-                        self.output_frontend_thread,
-                        self.backend_thread]
+        self.threads = self.input_frontend_threads + [self.output_frontend_thread,
+                                                      self.backend_thread]
 
     def run(self) -> None:
         for thread in self.threads:
@@ -187,9 +190,11 @@ class CmdLineBot:
             while True:
                 time.sleep(10)
         except KeyboardInterrupt:
-            self.input_frontend_thread.kill()
-            self.output_frontend_thread.kill()
-            self.backend_thread.kill()
+            for thread in self.threads:
+                thread.kill()
+            # self.input_frontend_thread.kill()
+            # self.output_frontend_thread.kill()
+            # self.backend_thread.kill()
 
     def callback_from_inputfrontend(self, cmdline: CLBCmdLine) -> Any:  # 返り値はNoneに直す
         self.backend_thread.put(cmdline)
