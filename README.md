@@ -9,7 +9,8 @@
 
 # 動作環境
 - OSは多分何でも大丈夫(Ubuntu上で開発)
-- `python3` (`version > 3.6`)
+- `python3` (`version >= 3.5`)
+    * 一時 `typing.Coroutine` を使っていたので，`3.6` 以上のバージョンが必要だった
     * `Ubuntu 16.04`に`python 3.6`を(ソースからビルドして)インストールする際に，
       `make test`で`test_urllib2net`に失敗した．
       これは，`sudo apt install libssl-dev`することで解決した．
@@ -72,7 +73,6 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 - バチャコン機能
 
 ## 細かいやつ
-- `CLBTask` をサブクラスに分ける
 - `!init` したときにbackendがエラーを吐くのを修正
 - コマンドのエラーメッセージの調整
   (ルートコマンドなのに「サブコマンド名が不正」と出る)
@@ -80,3 +80,5 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
   →`@typechecked`を利用する？
 - `isinstance`はなるべく排除し，`@typechecked`を利用する．
 - `CmdLineBot.run()`で`sleep(10)`してるの，もうちょっとどうにかならない？
+- `send_msg`, `send_dm`あたりのコードの整理
+- 「ユーザー用の設定ファイル」と「botが利用する記録ファイル」を分ける
