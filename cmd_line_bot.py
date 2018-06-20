@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 from abc import ABCMeta, abstractmethod
-# import asyncio
-from threading import Thread
+import asyncio
+from threading import Thread, Event
 from queue import Queue
 from typing import Callable, Any, List, Union, Optional, cast
 # from pytypes import typechecked
 import traceback
 
 from clb_error import CLBError  # , CLBIndexError
-from clb_interface import CLBTask, CLBCmdLine, create_reply_task
+from clb_interface import CLBTask, CLBDummyTask, CLBDummyCmdLine, CLBCmdLine, create_reply_task
 
 
 class CLBInputFrontEnd(metaclass=ABCMeta):
@@ -17,6 +17,10 @@ class CLBInputFrontEnd(metaclass=ABCMeta):
 
     @abstractmethod
     def run(self, callback: Callable[[CLBCmdLine], None]) -> None:
+        pass
+
+    @abstractmethod
+    def kill(self) -> None:
         pass
 
 
@@ -38,6 +42,10 @@ class CLBOutputFrontEnd(metaclass=ABCMeta):
                 filename: Optional[str]) -> None:
         pass
 
+    @abstractmethod
+    def kill(self) -> None:
+        pass
+
 
 class CLBBackEnd(metaclass=ABCMeta):
     def __init__(self):
@@ -47,20 +55,42 @@ class CLBBackEnd(metaclass=ABCMeta):
     def manage_cmdline(self, cmdline: CLBCmdLine) -> List[Union[CLBTask, List[CLBTask]]]:
         pass
 
+    @abstractmethod
+    def kill(self) -> None:
+        pass
+
 
 # threads
+class CLBInputFrontEndThread(Thread):
+    def __init__(self,
+                 input_frontend: CLBInputFrontEnd,
+                 callback: Callable[[CLBCmdLine], None]) -> None:
+        super(CLBInputFrontEndThread, self).__init__()
+        self.setDaemon(False)
+        self.input_frontend = input_frontend
+        self.callback = callback
+
+    def run(self) -> None:
+        self.input_frontend.run(self.callback)
+
+    def kill(self) -> None:
+        self.input_frontend.kill()
+
+
 class CLBOutputFrontEndThread(Thread):
     def __init__(self,
                  output_frontend: CLBOutputFrontEnd) -> None:
         super(CLBOutputFrontEndThread, self).__init__()
-        self.setDaemon(True)
+        self.setDaemon(False)
         self.output_frontend = output_frontend
         self.queue = Queue()  # type: Queue[Union[CLBTask, List[CLBTask]]]
+        self._killed = False
 
     def run(self):
         while True:
             task_group = self.queue.get()
-            # coroutines = []
+            if self._killed:
+                break
             if isinstance(task_group, CLBTask):
                 task_group = [task_group]
             if len(task_group) >= 2:
@@ -81,20 +111,28 @@ class CLBOutputFrontEndThread(Thread):
             task_group: Union[CLBTask, List[CLBTask]]) -> None:
         self.queue.put(task_group)
 
+    def kill(self) -> None:
+        self._killed = True
+        self.queue.put(CLBDummyTask())
+        self.output_frontend.kill()
+
 
 class CLBBackEndThread(Thread):
     def __init__(self,
                  backend: CLBBackEnd,
                  callback: Callable[[Union[CLBTask, List[CLBTask]]], None]) -> None:
         super(CLBBackEndThread, self).__init__()
-        self.setDaemon(True)
+        self.setDaemon(False)
         self.backend = backend
         self.queue = Queue()  # type: Queue[CLBCmdLine]
         self.callback = callback
+        self._killed = False
 
     def run(self):
         while True:
             cmdline = self.queue.get()
+            if self._killed:
+                break
             try:
                 tasks = self.backend.manage_cmdline(cmdline)
                 for task_group in tasks:
@@ -118,6 +156,11 @@ class CLBBackEndThread(Thread):
     def put(self, cmdline: CLBCmdLine) -> None:
         self.queue.put(cmdline)
 
+    def kill(self) -> None:
+        self._killed = True
+        self.queue.put(CLBDummyCmdLine())
+        self.backend.kill()
+
 
 class CmdLineBot:
     def __init__(self,
@@ -136,7 +179,17 @@ class CmdLineBot:
             thread.start()
 
     def run(self) -> None:
-        self.input_frontend.run(self.callback_from_inputfrontend)
+        # self.input_frontend.run(self.callback_from_inputfrontend)
+        self.input_frontend_thread = CLBInputFrontEndThread(self.input_frontend, self.callback_from_inputfrontend)
+        self.input_frontend_thread.start()
+        import time
+        try:
+            while True:
+                time.sleep(10)
+        except KeyboardInterrupt:
+            self.input_frontend_thread.kill()
+            self.output_frontend_thread.kill()
+            self.backend_thread.kill()
 
     def callback_from_inputfrontend(self, cmdline: CLBCmdLine) -> Any:  # 返り値はNoneに直す
         self.backend_thread.put(cmdline)

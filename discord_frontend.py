@@ -122,6 +122,11 @@ class DiscordInputFrontEnd(CLBInputFrontEnd):
         self.config.save()
         await self.config.reply_to_msg("initしました", msg)
 
+    def kill(self) -> None:
+        client = self.config.client
+        if client.is_logged_in:
+            asyncio.run_coroutine_threadsafe(client.logout(), client.loop)
+
 
 class DiscordOutputFrontEnd(CLBOutputFrontEnd):
     def __init__(self,
@@ -163,6 +168,11 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
             await client.send_message(destination=user, content=text)
         else:
             await client.send_file(destination=user, fp=filename, content=text)
+
+    def kill(self) -> None:
+        client = self.config.client
+        if client.is_logged_in:
+            asyncio.run_coroutine_threadsafe(client.logout(), client.loop)
 
 
 class DiscordFrontEnd:

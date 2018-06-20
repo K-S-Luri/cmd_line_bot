@@ -108,3 +108,6 @@ class CmdArgBackEnd(CLBBackEnd):
         if len(cmdargline.parsed_content) == 0:
             return []
         return self._rootcmd.run(cmdargline, -1)
+
+    def kill(self):
+        pass

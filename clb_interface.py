@@ -16,6 +16,11 @@ class CLBTask:
         self.filename = filename
 
 
+class CLBDummyTask(CLBTask):
+    def __init__(self):
+        pass
+
+
 class CLBCmdLine:
     # CLBTaskと同じく，msg と dm で分けてサブクラスを作る？
     def __init__(self, cmdline_type: str,
@@ -31,6 +36,11 @@ class CLBCmdLine:
         self.content = content
         self.author = author
         self.channelname = channelname
+
+
+class CLBDummyCmdLine(CLBCmdLine):
+    def __init__(self):
+        pass
 
 
 # utilities
