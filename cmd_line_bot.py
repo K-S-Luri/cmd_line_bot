@@ -25,17 +25,17 @@ class CLBOutputFrontEnd(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    async def send_msg(self,
-                       channelname: str,
-                       text: Optional[str],
-                       filename: Optional[str]) -> None:
+    def send_msg(self,
+                 channelname: str,
+                 text: Optional[str],
+                 filename: Optional[str]) -> None:
         pass
 
     @abstractmethod
-    async def send_dm(self,
-                      username: str,
-                      text: Optional[str],
-                      filename: Optional[str]) -> None:
+    def send_dm(self,
+                username: str,
+                text: Optional[str],
+                filename: Optional[str]) -> None:
         pass
 
 
@@ -51,46 +51,35 @@ class CLBBackEnd(metaclass=ABCMeta):
 # threads
 class CLBOutputFrontEndThread(Thread):
     def __init__(self,
-                 frontend: CLBOutputFrontEnd) -> None:
+                 output_frontend: CLBOutputFrontEnd) -> None:
         super(CLBOutputFrontEndThread, self).__init__()
         self.setDaemon(True)
-        self.frontend = frontend
+        self.output_frontend = output_frontend
         self.queue = Queue()  # type: Queue[Union[CLBTask, List[CLBTask]]]
 
     def run(self):
         # loop = asyncio.new_event_loop()
         while True:
             task_group = self.queue.get()
-            print("queue of outputFrontend")
-            coroutines = []
+            # coroutines = []
             if isinstance(task_group, CLBTask):
                 task_group = [task_group]
+            if len(task_group) >= 2:
+                print("複数メッセージの並列送信はまだ対応してないよ")
             for task in task_group:
                 if task.type == "msg":
                     channelname = cast(str, task.channelname)
-                    coroutines.append(self.frontend.send_msg(channelname=channelname,
-                                                             text=task.text,
-                                                             filename=task.filename))
+                    self.output_frontend.send_msg(channelname=channelname,
+                                                  text=task.text,
+                                                  filename=task.filename)
                 elif task.type == "dm":
                     username = cast(str, task.username)
-                    coroutines.append(self.frontend.send_dm(username=username,
-                                                            text=task.text,
-                                                            filename=task.filename))
-            # await asyncio.gather(*coroutines)
-            # loop.run_until_complete(*coroutines)
-            # loop.run_until_complete(self.frontend.send_msg(channelname="general", text="hogeeee", filename=None))
-            print("hgoe")
-            # asyncio.run_coroutine_threadsafe(self.frontend.send_msg(channelname="general",
-            #                                                         text="hogeeee", filename=None),
-            #                                  self.frontend.config.client.loop).result()
-            for coro in coroutines:
-                asyncio.run_coroutine_threadsafe(coro,
-                                                 self.frontend.config.client.loop)
-            print("finished")
+                    self.output_frontend.send_dm(username=username,
+                                                 text=task.text,
+                                                 filename=task.filename)
 
     def put(self,
             task_group: Union[CLBTask, List[CLBTask]]) -> None:
-        print("put at outputFrontend")
         self.queue.put(task_group)
 
 
@@ -107,13 +96,11 @@ class CLBBackEndThread(Thread):
     def run(self):
         while True:
             cmdline = self.queue.get()
-            print("get")
             tasks = self.backend.manage_cmdline(cmdline)
             for task_group in tasks:
                 self.callback(task_group)
 
     def put(self, cmdline: CLBCmdLine) -> None:
-        print("put at backend")
         self.queue.put(cmdline)
 
 
@@ -126,10 +113,10 @@ class CmdLineBot:
         self.output_frontend = output_frontend
         self.backend = backend
         # output_frontend.config.client.run(output_frontend.token)
-        self.out_front_thread = CLBOutputFrontEndThread(output_frontend)
-        self.back_thread = CLBBackEndThread(self.backend, self.callback_from_backend)
+        self.output_frontend_thread = CLBOutputFrontEndThread(output_frontend)
+        self.backend_thread = CLBBackEndThread(self.backend, self.callback_from_backend)
 
-        threads = [self.out_front_thread, self.back_thread]
+        threads = [self.output_frontend_thread, self.backend_thread]
         for thread in threads:
             thread.start()
 
@@ -137,27 +124,7 @@ class CmdLineBot:
         self.input_frontend.run(self.callback_from_inputfrontend)
 
     def callback_from_inputfrontend(self, cmdline: CLBCmdLine) -> Any:  # 返り値はNoneに直す
-        self.back_thread.put(cmdline)
+        self.backend_thread.put(cmdline)
 
     def callback_from_backend(self, task_group: Union[CLBTask, List[CLBTask]]) -> None:
-        self.out_front_thread.put(task_group)
-
-    async def call_backend(self, cmdline: CLBCmdLine) -> None:
-        tasks = self.backend.manage_cmdline(cmdline)
-        assert isinstance(tasks, list), "%s is not a list" % tasks
-        for task_group in tasks:
-            coroutines = []
-            if isinstance(task_group, CLBTask):
-                task_group = [task_group]
-            for task in task_group:
-                if task.type == "msg":
-                    channelname = cast(str, task.channelname)
-                    coroutines.append(self.output_frontend.send_msg(channelname=channelname,
-                                                                    text=task.text,
-                                                                    filename=task.filename))
-                elif task.type == "dm":
-                    username = cast(str, task.username)
-                    coroutines.append(self.output_frontend.send_dm(username=username,
-                                                                   text=task.text,
-                                                                   filename=task.filename))
-            await asyncio.gather(*coroutines)
+        self.output_frontend_thread.put(task_group)

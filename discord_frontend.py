@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from typing import cast, Optional
 from pytypes import typechecked
+import asyncio
 
 import discord
 from cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBCmdLine
@@ -64,8 +65,23 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
     def __init__(self, config):
         self.config = config
 
-    async def send_msg(self, channelname, text, filename=None):
-        print(list(self.config.client.servers))
+    def send_msg(self,
+                 channelname: str,
+                 text: Optional[str],
+                 filename: Optional[str]) -> None:
+        coro = self._send_msg(channelname=channelname, text=text, filename=filename)
+        loop = self.config.client.loop
+        asyncio.run_coroutine_threadsafe(coro, loop).result()  # .result()をつけて，完了するまで待っている
+
+    def send_dm(self,
+                username: str,
+                text: Optional[str],
+                filename: Optional[str]) -> None:
+        coro = self._send_dm(username=username, text=text, filename=filename)
+        loop = self.config.client.loop
+        asyncio.run_coroutine_threadsafe(coro, loop).result()
+
+    async def _send_msg(self, channelname, text, filename=None):
         channel = self.config.get_channel_named(channelname)
         if channel is None:
             raise CLBError("チャンネル名が不正です")
@@ -75,7 +91,7 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
         else:
             await client.send_file(destination=channel, fp=filename, content=text)
 
-    async def send_dm(self, username, text, filename=None):
+    async def _send_dm(self, username, text, filename=None):
         user = self.config.get_user_named(username)
         if user is None:
             raise CLBError("ユーザー名が不正です")
