@@ -68,8 +68,8 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 # TODO
 ## 大きなやつ
 - テスト用のフロントエンドを追加
-  * terminalから入力を受け付けるinput frontend
-  * 予め与えた入力を順に送信するinput frontend
+    * terminalから入力を受け付けるinput frontend
+    * 予め与えた入力を順に送信するinput frontend
 - バチャコン機能
 
 ## 細かいやつ
