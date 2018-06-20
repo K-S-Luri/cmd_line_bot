@@ -9,7 +9,7 @@ def main():
     # frontend
     frontend = MyFrontEnd()
     input_frontend = DiscordFrontEnd()
-    output_frontend = DiscordFrontEnd()
+    output_frontend = input_frontend
     # backend
     backend = MyBackEnd()
     backend = example_backend

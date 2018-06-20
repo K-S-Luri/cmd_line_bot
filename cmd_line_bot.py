@@ -56,6 +56,7 @@ class CLBOutputFrontEndThread(Thread):
         loop = asyncio.new_event_loop()
         while True:
             task_group = self.queue.get()
+            print("queue of outputFrontend")
             coroutines = []
             if isinstance(task_group, CLBTask):
                 task_group = [task_group]
@@ -71,8 +72,16 @@ class CLBOutputFrontEndThread(Thread):
                                                             text=task.text,
                                                             filename=task.filename))
             # await asyncio.gather(*coroutines)
-            loop.run_until_complete(*coroutines)
+            # loop.run_until_complete(*coroutines)
             # loop.run_until_complete(self.frontend.send_msg(channelname="general", text="hogeeee", filename=None))
+            print("hgoe")
+            # asyncio.run_coroutine_threadsafe(self.frontend.send_msg(channelname="general",
+            #                                                         text="hogeeee", filename=None),
+            #                                  self.frontend.config.client.loop).result()
+            for coro in coroutines:
+                asyncio.run_coroutine_threadsafe(coro,
+                                                 self.frontend.config.client.loop)
+            print("finished")
 
     def put(self,
             task_group: Union[CLBTask, List[CLBTask]]) -> None:
@@ -110,7 +119,7 @@ class CmdLineBot:
                  backend: CLBBackEnd) -> None:
         self.frontend = input_frontend
         self.backend = backend
-        output_frontend.config.client.run(output_frontend.token)
+        # output_frontend.config.client.run(output_frontend.token)
         self.out_front_thread = CLBOutputFrontEndThread(output_frontend)
         self.back_thread = CLBBackEndThread(self.backend, self.callback_from_backend)
 
