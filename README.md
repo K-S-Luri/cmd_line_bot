@@ -80,3 +80,4 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 - `json`から読みとったデータを利用する際は，(特に実行時の)型チェックに気を使った方が良さそう．
   →`@typechecked`を利用する？
 - `isinstance`はなるべく排除し，`@typechecked`を利用する．
+- チャンネル名が不正だったときのエラーメッセージが，terminal上にしか出てこない
