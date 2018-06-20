@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-from cmd_line_bot import CLBTask
 from cmd_arg_backend import CmdArgBackEnd, CLBCmd, CLBCmdWithSub, CLBCmdArgLine  # , create_reply_task
-from clb_interface import create_reply_task
+from clb_interface import CLBTask, CLBTask_Msg, CLBTask_DM, create_reply_task
 from clb_error import CLBError
 from datetime import datetime
 
@@ -29,7 +28,7 @@ class Cmd_Msg(CLBCmd):
             raise CLBError("引数が多すぎます")
         name, text = cmdargline.get_args(pointer)
         tasks = []
-        tasks.append(CLBTask(tasktype="msg", channelname=name, text=text, cmdline=cmdargline.cmdline))
+        tasks.append(CLBTask_Msg(channelname=name, text=text, cmdline=cmdargline.cmdline))
         return tasks
 
 
@@ -46,7 +45,7 @@ class Cmd_Dm(CLBCmd):
             raise CLBError("引数が多すぎます")
         name, text = cmdargline.get_args(pointer)
         tasks = []
-        tasks.append(CLBTask(tasktype="dm", username=name, text=text, cmdline=cmdargline.cmdline))
+        tasks.append(CLBTask_DM(username=name, text=text, cmdline=cmdargline.cmdline))
         return tasks
 
 
@@ -63,8 +62,8 @@ class Cmd_File(CLBCmd):
             raise CLBError("引数が多すぎます")
         name, text = cmdargline.get_args(pointer)
         tasks = []
-        tasks.append(CLBTask(tasktype="msg", channelname=name, text=text,
-                             filename="dice.png", cmdline=cmdargline.cmdline))
+        tasks.append(CLBTask_Msg(channelname=name, text=text,
+                                 filename="dice.png", cmdline=cmdargline.cmdline))
         return tasks
 
 

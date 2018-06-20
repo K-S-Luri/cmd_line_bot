@@ -2,7 +2,8 @@ from typing import Optional
 from abc import ABCMeta, abstractmethod
 
 
-# API用のクラス
+# コマンドライン
+# 主に input frontend 絡みのAPIで用いる
 class CLBCmdLine(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self,
@@ -33,20 +34,37 @@ class CLBDummyCmdLine(CLBCmdLine):
         pass
 
 
-class CLBTask:
-    # msg と dm で分けてサブクラスを作った方が良いかも
-    def __init__(self, tasktype: str,
-                 username: Optional[str] = None,
-                 channelname: Optional[str] = None,
+# タスク
+# output frontend にメッセージの送信を依頼する際に用いる
+class CLBTask(metaclass=ABCMeta):
+    @abstractmethod
+    def __init__(self,
                  text: Optional[str] = None,
                  filename: Optional[str] = None,
                  cmdline: Optional[CLBCmdLine] = None) -> None:
-        self.type = tasktype
-        self.username = username
-        self.channelname = channelname
         self.text = text
         self.filename = filename
         self.cmdline = cmdline
+
+
+class CLBTask_Msg(CLBTask):
+    def __init__(self,
+                 channelname: str,
+                 text: Optional[str],
+                 filename: Optional[str] = None,
+                 cmdline: Optional[CLBCmdLine] = None) -> None:
+        super(CLBTask_Msg, self).__init__(text, filename, cmdline)
+        self.channelname = channelname
+
+
+class CLBTask_DM(CLBTask):
+    def __init__(self,
+                 username: str,
+                 text: Optional[str],
+                 filename: Optional[str] = None,
+                 cmdline: Optional[CLBCmdLine] = None) -> None:
+        super(CLBTask_DM, self).__init__(text, filename, cmdline)
+        self.username = username
 
 
 class CLBDummyTask(CLBTask):
@@ -59,11 +77,15 @@ def create_reply_task(cmdline: CLBCmdLine,
                       text: Optional[str] = None,
                       filename: Optional[str] = None) -> CLBTask:
     if isinstance(cmdline, CLBCmdLine_Msg):
-        tasktype = "msg"
         channelname = cmdline.channelname
-        task = CLBTask(tasktype=tasktype, channelname=channelname, text=text, filename=filename, cmdline=cmdline)
+        task = CLBTask_Msg(channelname=channelname,
+                           text=text,
+                           filename=filename,
+                           cmdline=cmdline)  # type: CLBTask
     elif isinstance(cmdline, CLBCmdLine_DM):
-        tasktype = "dm"
         author = cmdline.author
-        task = CLBTask(tasktype=tasktype, username=author, text=text, filename=filename, cmdline=cmdline)
+        task = CLBTask_DM(username=author,
+                          text=text,
+                          filename=filename,
+                          cmdline=cmdline)
     return task

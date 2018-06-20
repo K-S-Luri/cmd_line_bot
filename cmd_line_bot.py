@@ -8,8 +8,9 @@ from typing import Callable, Any, List, Union, Optional, cast
 import traceback
 
 from clb_error import CLBError  # , CLBIndexError
-from clb_interface import (CLBTask, CLBDummyTask, CLBDummyCmdLine,
-                           CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM, create_reply_task)
+from clb_interface import (CLBTask, CLBTask_Msg, CLBTask_DM, CLBDummyTask,
+                           CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM, CLBDummyCmdLine,
+                           create_reply_task)
 
 
 class CLBInputFrontEnd(metaclass=ABCMeta):
@@ -98,12 +99,12 @@ class CLBOutputFrontEndThread(Thread):
                 print("複数メッセージの並列送信はまだ対応してないよ")
             for task in task_group:
                 try:
-                    if task.type == "msg":
+                    if isinstance(task, CLBTask_Msg):
                         channelname = cast(str, task.channelname)
                         self.output_frontend.send_msg(channelname=channelname,
                                                       text=task.text,
                                                       filename=task.filename)
-                    elif task.type == "dm":
+                    elif isinstance(task, CLBTask_DM):
                         username = cast(str, task.username)
                         self.output_frontend.send_dm(username=username,
                                                      text=task.text,

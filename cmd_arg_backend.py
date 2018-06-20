@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from abc import ABCMeta, abstractmethod
-from typing import Callable, List, Union, Optional
+from typing import Callable, List, Union, Optional, cast
 
-from cmd_line_bot import CLBBackEnd, CLBTask
-from clb_interface import CLBCmdLine
+from cmd_line_bot import CLBBackEnd
+from clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBTask
 from clb_error import CLBError, CLBIndexError
 from parser import quote_parser
 
@@ -13,14 +13,15 @@ class CLBCmdArgLine:
     def __init__(self, cmdline: CLBCmdLine) -> None:
         self.cmdline = cmdline
 
-    def get_type(self) -> str:
-        return self.cmdline.type
+    # def get_type(self) -> str:
+    #     return self.cmdline.type
 
     def get_author(self) -> str:
         return self.cmdline.author
 
     def get_channelname(self) -> Optional[str]:
-        return self.cmdline.channelname
+        cmdline = cast(CLBCmdLine_Msg, self.cmdline)
+        return cmdline.channelname
 
     def parse(self,
               parser: Callable[[str], List[str]]) -> None:
