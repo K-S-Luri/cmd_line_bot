@@ -73,6 +73,13 @@ class DiscordConfig:
     def save(self):
         self.data.save()
 
+    async def on_ready(self) -> None:
+        client = self.client
+        print("logged in as")
+        print("[name] %s" % client.user.name)
+        print("[ id ] %s" % client.user.id)
+        print("------")
+
     def run_client(self) -> None:
         client = self.client
         if client.is_logged_in:
@@ -82,6 +89,7 @@ class DiscordConfig:
                                              client.loop).result()
             return
         self._trying_login = True
+        client.event(self.on_ready)  # clientログイン成功時の処理
         token = self.get_token()
         thread = Thread(target=client.run, args=(token,))
         thread.start()
@@ -115,15 +123,6 @@ class DiscordInputFrontEnd(CLBInputFrontEnd):
                  init_cmd: str = "!init") -> None:
         self.config = config
         self.init_cmd = init_cmd
-        # clientログイン成功時の処理
-        config.client.event(self.on_ready)
-
-    async def on_ready(self) -> None:
-        client = self.config.client
-        print("logged in as")
-        print("[name] %s" % client.user.name)
-        print("[ id ] %s" % client.user.id)
-        print("------")
 
     async def on_message(self,
                          callback: Callable[[CLBCmdLine], None],
