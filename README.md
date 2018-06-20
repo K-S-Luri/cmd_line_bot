@@ -81,3 +81,4 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
   →`@typechecked`を利用する？
 - `isinstance`はなるべく排除し，`@typechecked`を利用する．
 - チャンネル名が不正だったときのエラーメッセージが，terminal上にしか出てこない
+- `CmdLineBot.run()`で`sleep(10)`してるの，もうちょっとどうにかならない？
