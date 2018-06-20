@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
-from cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBBackEnd, CLBTask, CLBCmdLine
+from cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBBackEnd, CLBTask
+from clb_interface import CLBCmdLine, CLBCmdLine_Msg
 from time import sleep
 
 linesep = "----------\n"
@@ -12,7 +13,7 @@ class TrivialInputFrontEnd(CLBInputFrontEnd):
         # loop = asyncio.get_event_loop()
         contents = ["!dm wktkshn private", "!msg general hogeeeee", "!file general fugafuga"]
         for content in contents:
-            cmdline = CLBCmdLine(cmdline_type="msg", content=content, author="bourbaki", channelname="mychannel")
+            cmdline = CLBCmdLine_Msg(content=content, author="bourbaki", channelname="mychannel")
             callback(cmdline)
 
     def kill(self):

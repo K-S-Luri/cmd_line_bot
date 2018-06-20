@@ -6,7 +6,8 @@ from threading import Thread
 from time import sleep
 
 import discord
-from cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBCmdLine
+from cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd
+from clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM
 from clb_error import CLBError
 from clb_data import CLBData
 
@@ -126,17 +127,17 @@ class DiscordInputFrontEnd(CLBInputFrontEnd):
 
     async def on_message(self,
                          callback: Callable[[CLBCmdLine], None],
-                         msg: discord.Message):
+                         msg: discord.Message) -> None:
         if msg.content == self.init_cmd:
             await self.init_client(msg)
         if isinstance(msg.channel, discord.Channel):
-            cmdline_type = "msg"
             channelname = msg.channel.name
+            cmdline = CLBCmdLine_Msg(content=msg.content,
+                                     author=msg.author.name,
+                                     channelname=channelname)
         elif isinstance(msg.channel, discord.PrivateChannel):
-            cmdline_type = "dm"
-            channelname = None
-        cmdline = CLBCmdLine(cmdline_type=cmdline_type, content=msg.content,
-                             author=msg.author.name, channelname=channelname)
+            cmdline = CLBCmdLine_DM(content=msg.content,
+                                    author=msg.author.name)
         callback(cmdline)
 
     def run(self,

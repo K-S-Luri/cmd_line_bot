@@ -4,19 +4,27 @@ from typing import Optional
 # API用のクラス
 class CLBCmdLine:
     # CLBTaskと同じく，msg と dm で分けてサブクラスを作る？
-    def __init__(self, cmdline_type: str,
+    def __init__(self,
                  content: str,
-                 author: str,
-                 channelname: Optional[str] = None) -> None:
-        assert cmdline_type in ["msg", "dm"]
-        if cmdline_type == "msg":
-            assert isinstance(channelname, str)
-        elif cmdline_type == "dm":
-            assert channelname is None
-        self.type = cmdline_type
+                 author: str) -> None:
         self.content = content
         self.author = author
+
+
+class CLBCmdLine_Msg(CLBCmdLine):
+    def __init__(self,
+                 content: str,
+                 author: str,
+                 channelname: str) -> None:
+        super(CLBCmdLine_Msg, self).__init__(content, author)
         self.channelname = channelname
+
+
+class CLBCmdLine_DM(CLBCmdLine):
+    def __init__(self,
+                 content: str,
+                 author: str) -> None:
+        super(CLBCmdLine_DM, self).__init__(content, author)
 
 
 class CLBDummyCmdLine(CLBCmdLine):
@@ -49,11 +57,12 @@ class CLBDummyTask(CLBTask):
 def create_reply_task(cmdline: CLBCmdLine,
                       text: Optional[str] = None,
                       filename: Optional[str] = None) -> CLBTask:
-    tasktype = cmdline.type
-    if tasktype == "msg":
+    if isinstance(cmdline, CLBCmdLine_Msg):
+        tasktype = "msg"
         channelname = cmdline.channelname
         task = CLBTask(tasktype=tasktype, channelname=channelname, text=text, filename=filename, cmdline=cmdline)
-    elif tasktype == "dm":
+    elif isinstance(cmdline, CLBCmdLine_DM):
+        tasktype = "dm"
         author = cmdline.author
         task = CLBTask(tasktype=tasktype, username=author, text=text, filename=filename, cmdline=cmdline)
     return task

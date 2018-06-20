@@ -8,7 +8,8 @@ from typing import Callable, Any, List, Union, Optional, cast
 import traceback
 
 from clb_error import CLBError  # , CLBIndexError
-from clb_interface import CLBTask, CLBDummyTask, CLBDummyCmdLine, CLBCmdLine, create_reply_task
+from clb_interface import (CLBTask, CLBDummyTask, CLBDummyCmdLine,
+                           CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM, create_reply_task)
 
 
 class CLBInputFrontEnd(metaclass=ABCMeta):
@@ -113,11 +114,11 @@ class CLBOutputFrontEndThread(Thread):
                         if cmdline is None:
                             raise CLBError("cmdlineがNoneです")
                         error_msg = e.get_msg_to_discord()
-                        if cmdline.type == "msg":
+                        if isinstance(cmdline, CLBCmdLine_Msg):
                             channelname = cast(str, cmdline.channelname)
                             self.output_frontend.send_msg(channelname=channelname,
                                                           text=error_msg)
-                        elif cmdline.type == "dm":
+                        elif isinstance(cmdline, CLBCmdLine_DM):
                             username = cast(str, cmdline.author)
                             self.output_frontend.send_dm(username=username,
                                                          text=error_msg)

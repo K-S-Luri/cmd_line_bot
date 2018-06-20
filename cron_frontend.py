@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from cmd_line_bot import CLBInputFrontEnd
-from clb_interface import CLBCmdLine
+from clb_interface import CLBCmdLine, CLBCmdLine_Msg
 from typing import List
 from datetime import datetime
 from time import sleep
@@ -37,9 +37,8 @@ class CronInputFrontEnd(CLBInputFrontEnd):
 
 
 def cron_example() -> CronInputFrontEnd:
-    cmdline = CLBCmdLine(cmdline_type="msg",
-                         content="!time",
-                         author="wktkshn",
-                         channelname="general")
+    cmdline = CLBCmdLine_Msg(content="!time",
+                             author="wktkshn",
+                             channelname="general")
     job = CronJob(cmdline=cmdline, second=10)
     return CronInputFrontEnd([job])
