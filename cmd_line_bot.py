@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 from abc import ABCMeta, abstractmethod
-import asyncio
+# import asyncio
 from threading import Thread
 from queue import Queue
 from typing import Callable, Coroutine, Any, List, Union, Optional, cast
-from pytypes import typechecked
+# from pytypes import typechecked
 import traceback
 
-from clb_error import CLBError, CLBIndexError
+from clb_error import CLBError  # , CLBIndexError
 from clb_interface import CLBTask, CLBCmdLine, create_reply_task
 
 
@@ -59,7 +59,6 @@ class CLBOutputFrontEndThread(Thread):
         self.queue = Queue()  # type: Queue[Union[CLBTask, List[CLBTask]]]
 
     def run(self):
-        # loop = asyncio.new_event_loop()
         while True:
             task_group = self.queue.get()
             # coroutines = []
