@@ -7,10 +7,10 @@ from typing import Callable, Any, List, Union, Optional, cast
 # from pytypes import typechecked
 import traceback
 
-from clb_error import CLBError  # , CLBIndexError
-from clb_interface import (CLBTask, CLBTask_Msg, CLBTask_DM, CLBDummyTask,
-                           CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM, CLBDummyCmdLine,
-                           create_reply_task)
+from .clb_error import CLBError  # , CLBIndexError
+from .clb_interface import (CLBTask, CLBTask_Msg, CLBTask_DM, CLBDummyTask,
+                            CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM, CLBDummyCmdLine,
+                            create_reply_task)
 
 
 class CLBInputFrontEnd(metaclass=ABCMeta):

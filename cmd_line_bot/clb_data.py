@@ -2,7 +2,8 @@
 import json
 import os
 from typing import Optional, Union, Dict
-from clb_error import CLBError
+
+from .clb_error import CLBError
 
 
 # ファイルのロックとかした方が良い？

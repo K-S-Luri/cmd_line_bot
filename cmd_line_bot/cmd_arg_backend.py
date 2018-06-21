@@ -2,10 +2,10 @@
 from abc import ABCMeta, abstractmethod
 from typing import Callable, List, Union, Optional, cast
 
-from cmd_line_bot import CLBBackEnd
-from clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBTask
-from clb_error import CLBError, CLBIndexError
-from parser import quote_parser
+from .cmd_line_bot import CLBBackEnd
+from .clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBTask
+from .clb_error import CLBError, CLBIndexError
+from .parser import quote_parser
 
 
 # API用のクラスを拡張

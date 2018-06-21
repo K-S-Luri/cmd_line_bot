@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-from cmd_line_bot import CLBInputFrontEnd
-from clb_interface import CLBCmdLine, CLBCmdLine_Msg
 from typing import List
 from datetime import datetime
 from time import sleep
+
+from .cmd_line_bot import CLBInputFrontEnd
+from .clb_interface import CLBCmdLine, CLBCmdLine_Msg
 
 
 class CronJob:
