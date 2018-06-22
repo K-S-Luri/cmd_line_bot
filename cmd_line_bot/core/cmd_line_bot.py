@@ -102,27 +102,30 @@ class CLBOutputFrontEndThread(Thread):
             for task in task_group:
                 try:
                     self.output_frontend.send(task)
+                    send_success = True
                 except CLBError as e:
-                    try:
-                        cmdline = task.cmdline
-                        if cmdline is None:
-                            raise CLBError("cmdlineがNoneです")
-                        error_msg = e.get_msg_to_discord()
-                        if isinstance(cmdline, CLBCmdLine_Msg):
-                            channelname = cast(str, cmdline.channelname)
-                            task = CLBTask_Msg(channelname=channelname,
-                                               text=error_msg)
-                        elif isinstance(cmdline, CLBCmdLine_DM):
-                            username = cast(str, cmdline.author)
-                            task = CLBTask_DM(username=username,
-                                              text=error_msg)
-                        self.output_frontend.send(task)
-                    except CLBError as e_:
-                        print("%sをfrontendに送信する過程でエラー1が発生し，" % task)
-                        print("さらにエラー1の情報をfrontendに送信する過程でエラー2が発生しました")
-                        print("[エラー1]", e.get_msg_to_discord())
-                        print("[エラー2]", e_.get_msg_to_discord())
-                        print(traceback.format_exc())
+                    cmdline = task.cmdline
+                    if cmdline is None:
+                        raise CLBError("cmdlineがNoneです．発言元にエラーメッセージを返せるよう，CLBTaskにはcmdlineを設定してください")
+                    error_msg = e.get_msg_to_discord()
+                    task = create_reply_task(cmdline, error_msg)
+                    send_success = False
+                except FileNotFoundError as e:
+                    print(traceback.format_exc())
+                    cmdline = task.cmdline
+                    error_msg = "File Not Found: %s" % task.filename
+                    task = create_reply_task(cmdline, error_msg)
+                    send_success = False
+                finally:
+                    if not send_success:
+                        try:
+                            self.output_frontend.send(task)
+                        except CLBError as e_:
+                            print("%sをfrontendに送信する過程でエラー1が発生し，" % task)
+                            print("さらにエラー1の情報をfrontendに送信する過程でエラー2が発生しました")
+                            print("[エラー1]", error_msg)
+                            print("[エラー2]", e_.get_msg_to_discord())
+                            print(traceback.format_exc())
 
     def put(self,
             task_group: Union[CLBTask, List[CLBTask]]) -> None:

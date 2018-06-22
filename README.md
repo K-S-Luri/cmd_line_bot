@@ -67,7 +67,9 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 
 # TODO
 ## 大事なやつ
-- `send()`で送信するファイルが見つからなかった場合にエラーを吐いてbotが死ぬ
+- `CLBTask`に`cmdline`を設定せずしていない状態で`send()`中にエラーが起きると，
+  エラーを吐いてbotが死ぬ．
+  botが死ぬのは絶対に避けたいから，`while`ループの中身全体を`try:`で囲っておく？
 - テスト用のフロントエンドを追加
     * terminalから入力を受け付けるinput frontend
     * 予め与えた入力を順に送信するinput frontend
