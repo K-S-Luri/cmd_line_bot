@@ -66,7 +66,8 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 1. `sudo apt install python3 python3-pip wkhtmltopdf`
 
 # TODO
-## 大きなやつ
+## 大事なやつ
+- `send()`で送信するファイルが見つからなかった場合にエラーを吐いてbotが死ぬ
 - テスト用のフロントエンドを追加
     * terminalから入力を受け付けるinput frontend
     * 予め与えた入力を順に送信するinput frontend
