@@ -2,8 +2,8 @@
 from datetime import datetime
 
 from .cmd_arg_backend import CmdArgBackEnd, CLBCmd, CLBCmdWithSub, CLBCmdArgLine  # , create_reply_task
-from .clb_interface import CLBTask, CLBTask_Msg, CLBTask_DM, create_reply_task
-from .clb_error import CLBError
+from ..core.clb_interface import CLBTask, CLBTask_Msg, CLBTask_DM, create_reply_task
+from ..core.clb_error import CLBError
 
 
 class RootCmd(CLBCmdWithSub):

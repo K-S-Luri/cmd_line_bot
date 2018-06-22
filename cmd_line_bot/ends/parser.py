@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from typing import List, Optional, Union
 
-from .clb_error import CLBError
+from ..core.clb_error import CLBError
 
 
 def simple_parser(cmdline_content: str) -> List[str]:

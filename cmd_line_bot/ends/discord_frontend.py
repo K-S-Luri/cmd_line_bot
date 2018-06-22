@@ -6,11 +6,11 @@ from threading import Thread
 from time import sleep
 
 import discord
-from .cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd
-from .clb_interface import (CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM,
-                            CLBTask, CLBTask_Msg, CLBTask_DM)
-from .clb_error import CLBError
-from .clb_data import CLBData
+from ..core.cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd
+from ..core.clb_interface import (CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM,
+                                  CLBTask, CLBTask_Msg, CLBTask_DM)
+from ..core.clb_error import CLBError
+from ..core.clb_data import CLBData
 
 
 class DiscordConfig:

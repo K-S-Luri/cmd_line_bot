@@ -2,8 +2,8 @@
 import asyncio
 from time import sleep
 
-from .cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBBackEnd, CLBTask
-from .clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBTask_Msg, CLBTask_DM
+from ..core.cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBBackEnd, CLBTask
+from ..core.clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBTask_Msg, CLBTask_DM
 
 
 linesep = "----------\n"

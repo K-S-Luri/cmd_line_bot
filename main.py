@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from cmd_line_bot.cmd_line_bot import CmdLineBot
-from cmd_line_bot.trivial_ends import TrivialInputFrontEnd, TrivialOutputFrontEnd, TrivialBackEnd
-from cmd_line_bot.discord_frontend import DiscordFrontEnd
-from cmd_line_bot.example_backend import example_backend
-from cmd_line_bot.cron_frontend import cron_example
+from cmd_line_bot.core.cmd_line_bot import CmdLineBot
+from cmd_line_bot.ends.trivial_ends import TrivialInputFrontEnd, TrivialOutputFrontEnd, TrivialBackEnd
+from cmd_line_bot.ends.discord_frontend import DiscordFrontEnd
+from cmd_line_bot.ends.example_backend import example_backend
+from cmd_line_bot.ends.cron_frontend import cron_example
 
 
 def main():

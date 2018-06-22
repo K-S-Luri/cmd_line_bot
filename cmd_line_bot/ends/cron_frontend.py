@@ -3,8 +3,8 @@ from typing import List
 from datetime import datetime
 from time import sleep
 
-from .cmd_line_bot import CLBInputFrontEnd
-from .clb_interface import CLBCmdLine, CLBCmdLine_Msg
+from ..core.cmd_line_bot import CLBInputFrontEnd
+from ..core.clb_interface import CLBCmdLine, CLBCmdLine_Msg
 
 
 class CronJob:
