@@ -12,6 +12,10 @@ class CLBCmdLine(metaclass=ABCMeta):
         self.content = content
         self.author = author
 
+    @abstractmethod
+    def get_info(self) -> str:
+        pass
+
 
 class CLBCmdLine_Msg(CLBCmdLine):
     def __init__(self,
@@ -21,6 +25,9 @@ class CLBCmdLine_Msg(CLBCmdLine):
         super(CLBCmdLine_Msg, self).__init__(content, author)
         self.channelname = channelname
 
+    def get_info(self) -> str:
+        return "[msg from %s in %s] %s" % (self.author, self.channelname, self.content)
+
 
 class CLBCmdLine_DM(CLBCmdLine):
     def __init__(self,
@@ -28,10 +35,16 @@ class CLBCmdLine_DM(CLBCmdLine):
                  author: str) -> None:
         super(CLBCmdLine_DM, self).__init__(content, author)
 
+    def get_info(self) -> str:
+        return "[dm from %s] %s" % (self.author, self.content)
+
 
 class CLBDummyCmdLine(CLBCmdLine):
     def __init__(self):
         pass
+
+    def get_info(self) -> str:
+        return "dummy"
 
 
 # タスク

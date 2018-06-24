@@ -119,9 +119,10 @@ class CLBOutputFrontEndThread(Thread):
                 except Exception as e:
                     cmdline = task.cmdline
                     error_msg = traceback.format_exc()
+                    print(cmdline.get_info())
                     print(error_msg)
-                    error_msg_format = "```\n%s```" % error_msg
-                    error_task = create_reply_task(cmdline, error_msg_format)
+                    # error_msg_format = "```\n%s```" % error_msg  # code block にすると変なところで改行される
+                    error_task = create_reply_task(cmdline, error_msg)
                     send_success = False
                 finally:
                     if not send_success:
@@ -171,13 +172,10 @@ class CLBBackEndThread(Thread):
                 # print(error_msg)
             except Exception as e:
                 error_msg = traceback.format_exc()
+                # error_msg_format = "```\n%s\n```" % error_msg  # code block にすると変なところで改行される
                 task = create_reply_task(cmdline=cmdline, text=error_msg, filename=None)
                 self.callback(task)
-                if cmdline.type == "msg":
-                    info = "msg from %s in %s" % (cmdline.author, cmdline.channelname)
-                elif cmdline.type == "dm":
-                    info = "dm from %s" % cmdline.author
-                print("[%s] %s" % (info, cmdline.content))
+                print(cmdline.get_info())
                 print(error_msg)
 
     def put(self, cmdline: CLBCmdLine) -> None:
