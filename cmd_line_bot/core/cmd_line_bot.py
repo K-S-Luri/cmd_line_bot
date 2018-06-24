@@ -108,18 +108,25 @@ class CLBOutputFrontEndThread(Thread):
                     if cmdline is None:
                         raise CLBError("cmdlineがNoneです．発言元にエラーメッセージを返せるよう，CLBTaskにはcmdlineを設定してください")
                     error_msg = e.get_msg_to_discord()
-                    task = create_reply_task(cmdline, error_msg)
+                    error_task = create_reply_task(cmdline, error_msg)
                     send_success = False
                 except FileNotFoundError as e:
                     print(traceback.format_exc())
                     cmdline = task.cmdline
                     error_msg = "File Not Found: %s" % task.filename
-                    task = create_reply_task(cmdline, error_msg)
+                    error_task = create_reply_task(cmdline, error_msg)
+                    send_success = False
+                except Exception as e:
+                    cmdline = task.cmdline
+                    error_msg = traceback.format_exc()
+                    print(error_msg)
+                    error_msg_format = "```\n%s```" % error_msg
+                    error_task = create_reply_task(cmdline, error_msg_format)
                     send_success = False
                 finally:
                     if not send_success:
                         try:
-                            self.output_frontend.send(task)
+                            self.output_frontend.send(error_task)
                         except CLBError as e_:
                             print("%sをfrontendに送信する過程でエラー1が発生し，" % task)
                             print("さらにエラー1の情報をfrontendに送信する過程でエラー2が発生しました")
