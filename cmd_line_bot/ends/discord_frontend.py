@@ -169,6 +169,7 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
     def __init__(self,
                  config: DiscordConfig) -> None:
         self.config = config
+        self.initial_msg = True  # debug 用
 
     def send_msg(self,
                  channelname: str,
@@ -194,6 +195,11 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
             error_msg = "チャンネル名(%s)が不正です\nchannels: %s" % (channelname, self.config.get_channelnames())
             raise CLBError(error_msg)
         client = self.config.client
+        if self.initial_msg:
+            # debug 用
+            initial_text = "-------------------- New Session Start --------------------"
+            await client.send_message(destination=channel, content=initial_text)
+            self.initial_msg = False
         if filename is None:
             await client.send_message(destination=channel, content=text)
         else:
