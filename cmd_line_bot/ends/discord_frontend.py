@@ -29,7 +29,7 @@ class DiscordConfig:
     def get_token(self) -> str:
         token = self.data.get(self.data_category, "token")
         if token is None:
-            raise CLBError("設定ファイル(%s)でtokenを指定してください" % self.data.path)
+            raise CLBError("設定ファイル(%s)でtokenを指定してください" % self.data.get_config_path())
         return cast(str, token)
 
     def get_server(self) -> discord.Server:
@@ -225,10 +225,9 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
 class DiscordFrontEnd:
     def __init__(self,
                  init_cmd: str = "!init",
-                 data_path: str = "~/.clbconfig.json",
                  data_category: str = "discord") -> None:
         # configの準備
-        data = CLBData(path=data_path)
+        data = CLBData()
         client = discord.Client()
         self.config = DiscordConfig(client, data, data_category)
         # input/output frontendの作成

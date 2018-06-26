@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import json
+import yaml
 import os
 from typing import Optional, Union, Dict
 
@@ -8,20 +8,26 @@ from .clb_error import CLBError
 
 # ファイルのロックとかした方が良い？
 class CLBData:
-    def __init__(self, path: str) -> None:
-        self.path = os.path.expanduser(path)
+    def __init__(self,
+                 config_dir: str = "~/.clb.d") -> None:
+        self.config_dir = os.path.expanduser(config_dir)
         self._data = {}  # type: Dict[str, Dict[str, Union[str, int]]]
         self.load()
 
+    def get_config_path(self) -> str:
+        return os.path.join(self.config_dir, "config.yaml")
+
     def save(self) -> None:
-        with open(self.path, "w", encoding="utf-8") as f:
-            json.dump(self._data, f, indent=4)
+        path = self.get_config_path()
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(yaml.dump(self._data))
 
     def load(self) -> bool:
-        if not os.path.exists(self.path):
+        path = self.get_config_path()
+        if not os.path.exists(path):
             return False
-        with open(self.path, "r", encoding="utf-8") as f:
-            self._data = json.load(f)
+        with open(path, "r", encoding="utf-8") as f:
+            self._data = yaml.load(f)
             return True
 
     def get(self, category: str, key: str) -> Optional[Union[str, int]]:
