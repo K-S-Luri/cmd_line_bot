@@ -97,3 +97,4 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 - `CmdLineBot.run()`で`sleep(10)`してるの，もうちょっとどうにかならない？
 - `send_msg`, `send_dm`あたりのコードの整理
 - 複数の`msg`,`dm`の並列送信
+- サーバー名は`!init`で設定するのではなく，ユーザー設定ファイルに書かせる？

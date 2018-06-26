@@ -34,7 +34,10 @@ class DiscordConfig:
 
     def get_server(self) -> discord.Server:
         if self.server is None:
-            servername = cast(str, self.data.get_data(self.data_category, "servername"))
+            servername = self.data.get_data(self.data_category, "servername")
+            if servername is None:
+                raise CLBError("serverが設定されていません．initして下さい．(TODO: ユーザー設定ファイルに書かせても良いかも？)")
+            servername = cast(str, servername)
             self.set_server_named(servername)
         return cast(discord.Server, self.server)
 
@@ -72,8 +75,8 @@ class DiscordConfig:
             return None
         return server.get_member_named(username)
 
-    def save(self):
-        self.data.save()
+    # def save(self):
+    #     self.data.save()
 
     async def on_ready(self) -> None:
         client = self.client
@@ -156,7 +159,7 @@ class DiscordInputFrontEnd(CLBInputFrontEnd):
             raise CLBError("`%s`は(DMではなく，サーバー内の)テキストチャンネルに送信してください" % self.init_cmd)
         print("[Initialize client]\nServer: %s" % msg.server)
         self.config.set_server(msg.server)
-        self.config.save()
+        # self.config.save()
         await self.config.reply_to_msg("initしました", msg)
 
     def kill(self) -> None:

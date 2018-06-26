@@ -37,6 +37,8 @@ class CLBData:
 
     def get_config(self, category: str, key: str) -> Optional[Union[str, int]]:
         data = self._config
+        if data is None:
+            raise CLBError("設定ファイル%sが空です" % self.get_config_path())
         if category not in data:
             raise CLBError("カテゴリ'%s'が見つかりません" % category)
         if key in data[category]:
@@ -52,6 +54,8 @@ class CLBData:
             return None
         with open(path, "r", encoding="utf-8") as f:
             data = yaml.load(f)
+            if data is None:
+                data = {}
         if key in data.keys():
             res = data[key]
         else:
@@ -66,9 +70,11 @@ class CLBData:
         if os.path.exists(path):
             with open(path, "r", encoding="utf-8") as f:
                 data = yaml.load(f)
+            if data is None:
+                data = {}
         else:
             data = {}
-        data[category][key] = value
+        data[key] = value
         with open(path, "w", encoding="utf-8") as f:
             f.write(yaml.dump(data))
 
