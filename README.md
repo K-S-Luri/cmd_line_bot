@@ -15,9 +15,10 @@
       `make test`で`test_urllib2net`に失敗した．
       これは，`sudo apt install libssl-dev`することで解決した．
       参考: [Import Error: No module named _ssl](https://stackoverflow.com/questions/5128845/importerror-no-module-named-ssl)
-- 以下のpythonライブラリが必要
+- 以下のpythonライブラリが必要．環境によっては`sudo`が必要(`sudo -H`の方が良い場合も？)
     * `discord` (`python3 -m pip install -U discord.py`)
-    * `pytypes` (`python3 -m pip install pytypes`)
+    (`discord.py`公式で`-U`って書いてあったからつけてるけど，本当に必要？)
+    * `pytypes`, `pyyaml` (`python3 -m pip install pytypes pyyaml`)
 
 # documentation
 ## main.py
