@@ -21,26 +21,26 @@ class DiscordConfig:
         self.client = client
         self.data = data
         self.data_category = data_category
-        self.data.add_category(data_category)
+        # self.data.add_category(data_category)
         self.server = None  # type: Optional[discord.Server]
         self._trying_login = False
 
     @typechecked
     def get_token(self) -> str:
-        token = self.data.get(self.data_category, "token")
+        token = self.data.get_config(self.data_category, "token")
         if token is None:
             raise CLBError("設定ファイル(%s)でtokenを指定してください" % self.data.get_config_path())
         return cast(str, token)
 
     def get_server(self) -> discord.Server:
         if self.server is None:
-            servername = cast(str, self.data.get(self.data_category, "servername"))
+            servername = cast(str, self.data.get_data(self.data_category, "servername"))
             self.set_server_named(servername)
         return cast(discord.Server, self.server)
 
     def set_server(self, server: discord.Server) -> None:
         self.server = server
-        self.data.set(self.data_category, "servername", server.name)
+        self.data.set_data(self.data_category, "servername", server.name)
 
     @typechecked
     def set_server_named(self, servername: str) -> bool:
