@@ -34,7 +34,7 @@ class DiscordConfig:
 
     def get_server(self) -> discord.Server:
         if self.server is None:
-            servername = self.data.get_data(self.data_category, "servername")
+            servername = self.data.get_config(self.data_category, "servername")
             if servername is None:
                 raise CLBError("serverが設定されていません．initして下さい．(TODO: ユーザー設定ファイルに書かせても良いかも？)")
             servername = cast(str, servername)
