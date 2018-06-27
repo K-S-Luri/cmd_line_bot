@@ -18,7 +18,7 @@
 - 以下のpythonライブラリが必要．環境によっては`sudo`が必要(`sudo -H`の方が良い場合も？)
     * `discord` (`python3 -m pip install -U discord.py`)
     (`discord.py`公式で`-U`って書いてあったからつけてるけど，本当に必要？)
-    * `pytypes`, `pyyaml`, `imgkit` (`python3 -m pip install pytypes pyyaml imgkit`)
+    * `pytypes`, `pyyaml`, `imgkit`, `pyquery` (`python3 -m pip install pytypes pyyaml imgkit pyquery`)
 
 # documentation
 この節の情報は古いよ
