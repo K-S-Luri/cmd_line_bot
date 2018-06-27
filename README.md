@@ -21,6 +21,8 @@
     * `pytypes`, `pyyaml`, `imgkit` (`python3 -m pip install pytypes pyyaml imgkit`)
 
 # documentation
+この節の情報は古いよ
+
 ## main.py
 名前の通り．`CmdLineBot`, `CLBFrontEnd`, `CLBBackEnd`の使い方はここを見ると良いかも．
 
@@ -48,14 +50,12 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
 1. [Discordデベロッパーページ](https://discordapp.com/developers/applications/me)
    でbot用のユーザーを作成する
 2. `bot-token`を取得(コピーしておく)
-3. botを自分のチャンネルに追加する
-4. `~/.clbconfig.json` に以下の形のjsonデータを作成
-```json
-{
-    "discord": {
-        "token": "上で取得したbot-token"
-    }
-}
+3. botを自分のサーバーに追加する
+4. `~/.clb.d/config.yaml` に以下の形のjsonデータを作成
+```yaml
+discord:
+    token: "上で取得したbot-token"
+    servername: "あなたのサーバーの名前"
 ```
 
 ## PCでのinstallとsetup(Windows)
