@@ -13,25 +13,6 @@ from ..core.clb_data import CLBData
 virtual_contest_dir = "virtual_contest"
 
 
-class AtCoderScores:
-    def __init__(self, data: CLBData) -> None:
-        self.url = "https://atcoder-scores.herokuapp.com/index.html"
-        self.data = data
-        self.html_path = os.path.join(self.data.get_category_dir(virtual_contest_dir),
-                                      "scores.html")
-
-    def download(self) -> None:
-        with urllib.request.urlopen(self.url) as response:
-            html = response.read().decode("utf-8")
-        with open(self.html_path, "w", encoding="utf-8") as f:
-            f.write(html)
-
-    def read(self) -> str:
-        with open(self.html_path, "r", encoding="utf-8") as f:
-            html = f.read()
-        return html
-
-
 class AtCoderAPI:
     def __init__(self, data: CLBData) -> None:
         self.data = data
