@@ -3,7 +3,9 @@ from pyquery import PyQuery
 from typing import List, Tuple, Dict, Any, Optional, cast
 import urllib.request
 import os
-import yaml
+# import yaml
+import json
+
 
 from ..core.clb_data import CLBData
 
@@ -34,31 +36,26 @@ class AtCoderAPI:
     def __init__(self, data: CLBData) -> None:
         self.data = data
         self.url = "https://kenkoooo.com/atcoder/atcoder-api/info/merged-problems"
-        self.yaml_path = os.path.join(self.data.get_category_dir(virtual_contest_dir),
-                                      "problems.yaml")
+        self.json_path = os.path.join(self.data.get_category_dir(virtual_contest_dir),
+                                      "problems.json")
         self.problems = None  # type: Optional[List[Dict[str, Any]]]
 
     def download(self) -> None:
         print("downloading...")
         with urllib.request.urlopen(self.url) as response:
             print("...")
-            yaml_str = response.read().decode("utf-8")
-        print("loading yaml...")
-        yaml_data = yaml.load(yaml_str)
-        self.problems = yaml_data
-        print("dumping yaml...")
-        yaml_str = yaml.dump(yaml_data)
+            json_str = response.read().decode("utf-8")
         print("saving...")
-        with open(self.yaml_path, "w", encoding="utf-8") as f:
-            f.write(yaml_str)
+        with open(self.json_path, "w", encoding="utf-8") as f:
+            f.write(json_str)
 
     def read(self) -> None:
         if self.problems is not None:
             return
-        with open(self.yaml_path, "r", encoding="utf-8") as f:
-            yaml_str = f.read()
+        with open(self.json_path, "r", encoding="utf-8") as f:
+            json_str = f.read()
         print("loading yaml...")
-        self.problems = yaml.load(yaml_str)
+        self.problems = json.loads(json_str)
         print("ok")
 
     def search(self, problem_id: str) -> Dict[str, Any]:
