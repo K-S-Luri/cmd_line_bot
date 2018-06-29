@@ -91,13 +91,13 @@ class AtCoderVirtualContest:
                  contest_id: str,
                  data: CLBData) -> None:
         self.contest_id = contest_id
+        self.url = "https://not-522.appspot.com/contest/" + self.contest_id
         self.data = data
         self.html_path = os.path.join(self.data.get_category_dir(virtual_contest_dir),
                                       self.contest_id+".html")
 
     def download(self) -> None:
-        url = "https://not-522.appspot.com/contest/" + self.contest_id
-        with urllib.request.urlopen(url) as response:
+        with urllib.request.urlopen(self.url) as response:
             html = response.read().decode("utf-8")
         png_path = os.path.join(self.data.get_category_dir(virtual_contest_dir),
                                 self.contest_id+".png")
@@ -113,22 +113,43 @@ class AtCoderVirtualContest:
             html = f.read()
         return html
 
-    def get_problems(self) -> List[Tuple[str, str]]:
+    def get_title(self) -> str:
+        html = self.read()
+        query = PyQuery(html)
+        title_obj = query("div.container h1.page-header").contents()[0]
+        # .contents([0])により，<small class="pull-right">以後のコンテスト情報を切り落としている
+        return PyQuery(title_obj).text()
+
+    def get_problems(self) -> List[AtCoderProblem]:
         html = self.read()
         query = PyQuery(html)
         result = []
         for a in query("th a"):
             q = PyQuery(a)
-            result.append((q.text(), q.attr("href")))
+            problem = AtCoderProblem(q.attr("href"), self.data)
+            result.append(problem)
+        return result
+
+    def get_contest_info(self) -> str:
+        title = self.get_title()
+        problems = self.get_problems()
+        result = title + "\n"
+        for problem in problems:
+            result += "%s %s %s\n" % (problem.get_score(),
+                                      problem.get_id(),
+                                      problem.get_title())
+        result += self.url
         return result
 
 
 def avc_test():
     import pprint
     data = CLBData()
-    # contest_id = "6029001596338176"
-    # vc = AtCoderVirtualContest(contest_id, data)
-    # # vc.download()
+    contest_id = "6029001596338176"
+    vc = AtCoderVirtualContest(contest_id, data)
+    # vc.download()
+    print(vc.get_contest_info())
+    # print(vc.get_title())
     # problems = vc.get_problems()
     # pprint.pprint(problems)
 
@@ -143,12 +164,12 @@ def avc_test():
     #     print("searching %s..." % problem_id)
     #     pprint.pprint(api.search(problem_id))
 
-    urls = ["https://beta.atcoder.jp/contests/cf17-final-open/tasks/cf17_final_b",
-            "https://beta.atcoder.jp/contests/arc076/tasks/arc076_b"]
-    for url in urls:
-        problem = AtCoderProblem(url, data)
-        # pprint.pprint(problem.info)
-        print("%s, %s, %s" % (problem.get_id(),
-                              problem.get_title(),
-                              problem.get_score()))
-        print()
+    # urls = ["https://beta.atcoder.jp/contests/cf17-final-open/tasks/cf17_final_b",
+    #         "https://beta.atcoder.jp/contests/arc076/tasks/arc076_b"]
+    # for url in urls:
+    #     problem = AtCoderProblem(url, data)
+    #     # pprint.pprint(problem.info)
+    #     print("%s, %s, %s" % (problem.get_id(),
+    #                           problem.get_title(),
+    #                           problem.get_score()))
+    #     print()
