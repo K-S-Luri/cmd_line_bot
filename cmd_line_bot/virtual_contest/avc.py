@@ -1,3 +1,4 @@
+from pprint import pprint
 import imgkit
 from pyquery import PyQuery
 from typing import List, Tuple, Dict, Any, Optional, cast
@@ -83,6 +84,8 @@ class AtCoderProblem:
         return "%s %s %s" % (contest_type.upper(), contest_count, problem_alphabet.upper())
 
     def get_score(self) -> int:
+        if "point" not in self.info.keys():
+            return 0
         return int(self.info["point"])
 
 
@@ -108,7 +111,8 @@ class AtCoderVirtualContest:
         imgkit.from_string(html, png_path)
 
     def read(self) -> str:
-        # TODO: htmlファイルが存在しないときの処理とか
+        if not os.path.exists(self.html_path):
+            self.download()
         with open(self.html_path, "r", encoding="utf-8") as f:
             html = f.read()
         return html

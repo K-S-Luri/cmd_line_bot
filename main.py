@@ -6,7 +6,7 @@ from cmd_line_bot.ends.example_backend import example_backend
 from cmd_line_bot.ends.cron_frontend import cron_example
 
 
-def main():
+def first_example():
     # frontend
     input_frontend, output_frontend = TrivialInputFrontEnd(), TrivialOutputFrontEnd()
     d = DiscordFrontEnd()
@@ -21,6 +21,14 @@ def main():
     bot = CmdLineBot([input_frontend, cron_input_frontend], output_frontend, backend)
     bot.run()
 
+def vc_example():
+    from cmd_line_bot.virtual_contest.avc_backend import create_avc_backend
+    dfe = DiscordFrontEnd()
+    input_frontend = dfe.input_frontend
+    output_frontend = dfe.output_frontend
+    backend = create_avc_backend(dfe.data)
+    bot = CmdLineBot([input_frontend], output_frontend, backend)
+    bot.run()
 
 if __name__ == '__main__':
-    main()
+    vc_example()

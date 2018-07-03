@@ -83,6 +83,9 @@ discord:
     * terminalから入力を受け付けるinput frontend
     * 予め与えた入力を順に送信するinput frontend
 - バチャコン機能
+- `CLBCmd.run`でメッセージを出力するのは，`return`じゃなくてcallbackの方が良いかも
+    * `return`だと実行が終わらないと出力できない
+    * callbackなら実行途中に進捗状況を出力できたりする
 
 ## 細かいやつ
 - `!init` したときにbackendがエラーを吐くのを修正
@@ -99,3 +102,4 @@ discord:
 - `send_msg`, `send_dm`あたりのコードの整理
 - 複数の`msg`,`dm`の並列送信
 - サーバー名は`!init`で設定するのではなく，ユーザー設定ファイルに書かせる？
+- `CLBCmd`で引数の個数を自動チェックする機構をつくる

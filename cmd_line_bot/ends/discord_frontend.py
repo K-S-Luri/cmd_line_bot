@@ -228,11 +228,15 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
 class DiscordFrontEnd:
     def __init__(self,
                  init_cmd: str = "!init",
-                 data_category: str = "discord") -> None:
+                 data_category: str = "discord",
+                 data: Optional[CLBData] = None) -> None:
         # configの準備
-        data = CLBData()
+        if data is None:
+            self.data = CLBData()
+        else:
+            self.data = data
         client = discord.Client()
-        self.config = DiscordConfig(client, data, data_category)
+        self.config = DiscordConfig(client, self.data, data_category)
         # input/output frontendの作成
         self.input_frontend = DiscordInputFrontEnd(self.config, init_cmd)
         self.output_frontend = DiscordOutputFrontEnd(self.config)
