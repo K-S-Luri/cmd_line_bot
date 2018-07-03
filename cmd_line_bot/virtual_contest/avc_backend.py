@@ -15,7 +15,8 @@ class RootCmd(CLBCmdWithSub):
     def __init__(self, data):
         self._documentation = "root command"
         self._subcmds = [Cmd_Show(data),
-                         Cmd_Set(data)]
+                         Cmd_Set(data),
+                         Cmd_Img(data)]
 
 
 class Cmd_Show(CLBCmd):
@@ -64,6 +65,24 @@ class Cmd_Set(CLBCmd):
         if match_url:
             return match_url.group(1)
         raise CLBError("contest_idの形式が不正です")
+
+
+class Cmd_Img(CLBCmd):
+    def __init__(self, data):
+        self._keys = ["img"]
+        self._documentation = "画像出力"
+        self._data = data
+
+    def run(self, cmdargline, pointer):
+        contest_id = self._data.get_data(avc_category, "contest_id")
+        if contest_id is None:
+            raise CLBError("contest_idをsetしてください")
+        text = "hoge"
+        vc = AtCoderVirtualContest(contest_id, self._data)
+        filename = vc.get_png_file()
+        tasks = [create_reply_task(cmdargline.cmdline, text, filename)]
+        return tasks
+
 
 def create_avc_backend(data):
     return CmdArgBackEnd(rootcmd=RootCmd(data))

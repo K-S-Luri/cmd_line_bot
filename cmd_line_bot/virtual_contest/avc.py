@@ -102,13 +102,17 @@ class AtCoderVirtualContest:
     def download(self) -> None:
         with urllib.request.urlopen(self.url) as response:
             html = response.read().decode("utf-8")
-        png_path = os.path.join(self.data.get_category_dir(virtual_contest_dir),
-                                self.contest_id+".png")
         with open(self.html_path, "w", encoding="utf-8") as f:
             print("write to %s" % self.html_path)
             f.write(html)
+
+    def get_png_file(self) -> str:
+        html = self.read()
+        png_path = os.path.join(self.data.get_category_dir(virtual_contest_dir),
+                                self.contest_id+".png")
         print("write to %s" % png_path)
         imgkit.from_string(html, png_path)
+        return png_path
 
     def read(self) -> str:
         if not os.path.exists(self.html_path):
