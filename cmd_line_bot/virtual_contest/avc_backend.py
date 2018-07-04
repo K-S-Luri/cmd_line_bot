@@ -23,7 +23,7 @@ class RootCmd(CLBCmdWithSub):
 class Cmd_Show(CLBCmd):
     def __init__(self, data):
         self._keys = ["show"]
-        self._documentation = "showする"
+        self._documentation = "バチャコンの概要を表示"
         self._data = data
 
     def run(self, cmdargline, pointer, send_task):
@@ -40,7 +40,7 @@ class Cmd_Show(CLBCmd):
 class Cmd_Set(CLBCmd):
     def __init__(self, data: CLBData) -> None:
         self._keys = ["set"]
-        self._documentation = "setする"
+        self._documentation = "バチャコンの contest_id を設定する．URLコピペでも，数字のみでもOK"
         self._data = data
 
     def run(self,
@@ -73,7 +73,7 @@ class Cmd_Set(CLBCmd):
 class Cmd_Img(CLBCmd):
     def __init__(self, data):
         self._keys = ["img"]
-        self._documentation = "画像出力"
+        self._documentation = "バチャコンのhtmlを画像にして送信"
         self._data = data
 
     def run(self, cmdargline, pointer, send_task):
@@ -90,15 +90,22 @@ class Cmd_Img(CLBCmd):
 class Cmd_Download(CLBCmd):
     def __init__(self, data):
         self._keys = ["download", "dl"]
-        self._documentation = "非公式APIから問題データをDL"
+        self._documentation = "非公式APIから問題データをDL，バチャコンのhtmlをDl"
         self._data = data
 
     def run(self, cmdargline, pointer, send_task):
         api = AtCoderAPI(self._data)
         api.download()
-        text = "問題データをダウンロードしました"
+        text = "AtCoder非公式APIから問題データをダウンロードしました"
         task = create_reply_task(cmdargline.cmdline, text)
         send_task(task)
+        contest_id = self._data.get_data(avc_category, "contest_id")
+        if contest_id is not None:
+            vc = AtCoderVirtualContest(contest_id, self._data)
+            vc.download()
+            text = "バチャコンのhtmlをダウンロードしました"
+            task = create_reply_task(cmdargline.cmdline, text)
+            send_task(task)
 
 
 def create_avc_backend(data):
