@@ -68,7 +68,7 @@ discord:
 
 # TODO
 ## 大事なやつ
-- `CLBTask`に`cmdline`を設定せずしていない状態で`send()`中にエラーが起きると，エラーを吐いてbotが死ぬ．
+- `CLBTask`に`cmdline`を設定していない状態で`send()`中にエラーが起きると，エラーを吐いてbotが死ぬ．
     * botが死ぬのは絶対に避けたいから，`while`ループの中身全体を`try:`で囲っておく？
     * `task.cmdline`は必須属性にする？その場合はデフォルトのcmdlineみたいのがあった方が良いかも？
     * 少なくとも，`task.cmdline`に`None`を代入するよりは`CLBTask_None()`みたいなのを代入した方が色々と良さそう？
@@ -76,16 +76,9 @@ discord:
     * 「ユーザー用の設定ファイル」(ReadOnly)と「botが利用する記録ファイル」を分ける
     * singleton にする
     * ファイルのロックとかの機構
-- バックエンドの出力ファイルとかも`CLBData`を介して取得する
-    * `.clb.d`みたいなディレクトリをつくる
-    * 現状の`.clbconfig.json`は，`.clb.d/userconfig.json`みたいな感じにする
-- テスト用のフロントエンドを追加
-    * terminalから入力を受け付けるinput frontend
-    * 予め与えた入力を順に送信するinput frontend
+- テスト用のフロントエンドへ機能追加
+    * `author`を指定したり，`DM`に切り替えたりする機能
 - バチャコン機能
-- `CLBCmd.run`でメッセージを出力するのは，`return`じゃなくてcallbackの方が良いかも
-    * `return`だと実行が終わらないと出力できない
-    * callbackなら実行途中に進捗状況を出力できたりする
 
 ## 細かいやつ
 - `!init` したときにbackendがエラーを吐くのを修正
@@ -101,5 +94,4 @@ discord:
 - `CmdLineBot.run()`で`sleep(10)`してるの，もうちょっとどうにかならない？
 - `send_msg`, `send_dm`あたりのコードの整理
 - 複数の`msg`,`dm`の並列送信
-- サーバー名は`!init`で設定するのではなく，ユーザー設定ファイルに書かせる？
 - `CLBCmd`で引数の個数を自動チェックする機構をつくる
