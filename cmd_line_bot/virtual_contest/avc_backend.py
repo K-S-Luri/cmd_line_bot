@@ -1,7 +1,7 @@
 from typing import List, Union, cast
 import re
 
-from .avc import AtCoderVirtualContest
+from .avc import AtCoderVirtualContest, AtCoderAPI
 from ..core.clb_interface import CLBTask, CLBTask_Msg, CLBTask_DM, create_reply_task
 from ..core.clb_error import CLBError
 from ..core.clb_data import CLBData
@@ -16,7 +16,8 @@ class RootCmd(CLBCmdWithSub):
         self._documentation = "root command"
         self._subcmds = [Cmd_Show(data),
                          Cmd_Set(data),
-                         Cmd_Img(data)]
+                         Cmd_Img(data),
+                         Cmd_Download(data)]
 
 
 class Cmd_Show(CLBCmd):
@@ -81,6 +82,20 @@ class Cmd_Img(CLBCmd):
         vc = AtCoderVirtualContest(contest_id, self._data)
         filename = vc.get_png_file()
         tasks = [create_reply_task(cmdargline.cmdline, text, filename)]
+        return tasks
+
+
+class Cmd_Download(CLBCmd):
+    def __init__(self, data):
+        self._keys = ["download", "dl"]
+        self._documentation = "非公式APIから問題データをDL"
+        self._data = data
+
+    def run(self, cmdargline, pointer):
+        api = AtCoderAPI(self._data)
+        api.download()
+        text = "問題データをダウンロードしました"
+        tasks = [create_reply_task(cmdargline.cmdline, text)]
         return tasks
 
 
