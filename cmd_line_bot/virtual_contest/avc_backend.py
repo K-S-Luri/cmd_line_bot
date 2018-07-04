@@ -78,7 +78,7 @@ class Cmd_Img(CLBCmd):
         contest_id = self._data.get_data(avc_category, "contest_id")
         if contest_id is None:
             raise CLBError("contest_idをsetしてください")
-        text = "hoge"
+        text = None
         vc = AtCoderVirtualContest(contest_id, self._data)
         filename = vc.get_png_file()
         tasks = [create_reply_task(cmdargline.cmdline, text, filename)]
