@@ -60,7 +60,9 @@ class CLBOutputFrontEnd(metaclass=ABCMeta):
 
 class CLBBackEnd(metaclass=ABCMeta):
     @abstractmethod
-    def manage_cmdline(self, cmdline: CLBCmdLine) -> List[CLBTask]:
+    def manage_cmdline(self,
+                       cmdline: CLBCmdLine,
+                       send_task: Callable[[CLBTask], None]) -> None:
         pass
 
     @abstractmethod
@@ -135,8 +137,8 @@ class CLBOutputFrontEndThread(Thread):
                         print(traceback.format_exc())
 
     def put(self,
-            task_group: CLBTask) -> None:
-        self.queue.put(task_group)
+            task: CLBTask) -> None:
+        self.queue.put(task)
 
     def kill(self) -> None:
         self._killed = True
@@ -155,15 +157,13 @@ class CLBBackEndThread(Thread):
         self.callback = callback
         self._killed = False
 
-    def run(self):
+    def run(self) -> None:
         while True:
             cmdline = self.queue.get()
             if self._killed:
                 break
             try:
-                tasks = self.backend.manage_cmdline(cmdline)
-                for task_group in tasks:
-                    self.callback(task_group)
+                self.backend.manage_cmdline(cmdline, self.callback)
             except CLBError as e:
                 error_msg = e.get_msg_to_discord()
                 task = create_reply_task(cmdline=cmdline, text=error_msg, filename=None)
@@ -220,5 +220,5 @@ class CmdLineBot:
     def callback_from_inputfrontend(self, cmdline: CLBCmdLine) -> None:
         self.backend_thread.put(cmdline)
 
-    def callback_from_backend(self, task_group: CLBTask) -> None:
-        self.output_frontend_thread.put(task_group)
+    def callback_from_backend(self, task: CLBTask) -> None:
+        self.output_frontend_thread.put(task)

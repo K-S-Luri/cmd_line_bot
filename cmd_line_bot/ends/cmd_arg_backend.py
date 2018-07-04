@@ -37,6 +37,8 @@ class CLBCmdArgLine:
         assert len(self.parsed_content) > 0
         if pointer >= len(self.parsed_content):
             raise CLBIndexError("不正なindexです")
+        if pointer < 0:
+            print("pointer(=%s)が負だけど大丈夫？" % pointer)
         return self.parsed_content[pointer]
 
     def get_num_args(self, pointer: int) -> int:
@@ -70,15 +72,19 @@ class CLBCmd(metaclass=ABCMeta):
     @abstractmethod
     def run(self,
             cmdargline: CLBCmdArgLine,
-            pointer: int) -> List[CLBTask]:
+            pointer: int,
+            send_task: Callable[[CLBTask], None]) -> None:
         pass
 
 
 class CLBCmdWithSub(CLBCmd):
-    def __init__(self):
-        self._subcmds = []
+    def __init__(self) -> None:
+        self._subcmds = []  # type: List[CLBCmd]
 
-    def run(self, cmdargline, pointer):
+    def run(self,
+            cmdargline: CLBCmdArgLine,
+            pointer: int,
+            send_task: Callable[[CLBTask], None]) -> None:
         assert isinstance(cmdargline, CLBCmdArgLine), "%s is not a CLBCmdArgLine" % cmdargline
         assert cmdargline.get_num_args(pointer) >= 0
         error_msg = ""
@@ -87,7 +93,8 @@ class CLBCmdWithSub(CLBCmd):
         else:
             for subcmd in self._subcmds:
                 if subcmd.accept(cmdargline, pointer + 1):
-                    return subcmd.run(cmdargline, pointer + 1)
+                    subcmd.run(cmdargline, pointer + 1, send_task)
+                    return
             error_msg = "サブコマンド名(%s)が不正です\n" % cmdargline.get_key(pointer + 1)
         error_msg += "コマンド一覧:\n"
         for subcmd in self._subcmds:
@@ -103,12 +110,14 @@ class CmdArgBackEnd(CLBBackEnd):
         self._parser = parser
         self._rootcmd = rootcmd
 
-    def manage_cmdline(self, cmdline: CLBCmdLine) -> List[CLBTask]:
+    def manage_cmdline(self,
+                       cmdline: CLBCmdLine,
+                       send_task: Callable[[CLBTask], None]) -> None:
         cmdargline = CLBCmdArgLine(cmdline)
         cmdargline.parse(self._parser)
         if len(cmdargline.parsed_content) == 0:
-            return []
-        return self._rootcmd.run(cmdargline, -1)
+            return
+        self._rootcmd.run(cmdargline, -1, send_task)
 
     def kill(self):
         pass

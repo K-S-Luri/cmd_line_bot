@@ -1,4 +1,4 @@
-from typing import List, Union, cast
+from typing import List, Union, cast, Callable
 import re
 
 from .avc import AtCoderVirtualContest, AtCoderAPI
@@ -26,16 +26,15 @@ class Cmd_Show(CLBCmd):
         self._documentation = "showする"
         self._data = data
 
-    def run(self, cmdargline, pointer):
+    def run(self, cmdargline, pointer, send_task):
         contest_id = self._data.get_data(avc_category, "contest_id")
         if contest_id is None:
             raise CLBError("contest_idをsetしてください")
         vc = AtCoderVirtualContest(contest_id, self._data)
         vc_info = vc.get_contest_info()
-        print(vc_info)
+        # print(vc_info)
         task = create_reply_task(cmdargline.cmdline, vc_info)
-        tasks = [task]
-        return tasks
+        send_task(task)
 
 
 class Cmd_Set(CLBCmd):
@@ -46,7 +45,8 @@ class Cmd_Set(CLBCmd):
 
     def run(self,
             cmdargline: CLBCmdArgLine,
-            pointer: int) -> List[Union[CLBTask, List[CLBTask]]]:
+            pointer: int,
+            send_task: Callable[[CLBTask], None]) -> None:
         if cmdargline.get_num_args(pointer) < 1:
             raise CLBError("引数が足りません")
         elif cmdargline.get_num_args(pointer) > 1:
@@ -56,8 +56,9 @@ class Cmd_Set(CLBCmd):
         self._data.set_data(avc_category, "contest_id", contest_id)
         text = "contest_idを{cid}に設定しました".format(cid=contest_id)
         task = create_reply_task(cmdargline.cmdline, text)
-        tasks = [task]  # type: List[Union[CLBTask, List[CLBTask]]]
-        return tasks
+        send_task(task)
+        # tasks = [task]  # type: List[Union[CLBTask, List[CLBTask]]]
+        # return tasks
 
     def parse_contest_id(self, contest_id: str) -> str:
         if re.match("[0-9]+", contest_id):
@@ -75,15 +76,15 @@ class Cmd_Img(CLBCmd):
         self._documentation = "画像出力"
         self._data = data
 
-    def run(self, cmdargline, pointer):
+    def run(self, cmdargline, pointer, send_task):
         contest_id = self._data.get_data(avc_category, "contest_id")
         if contest_id is None:
             raise CLBError("contest_idをsetしてください")
         text = None
         vc = AtCoderVirtualContest(contest_id, self._data)
         filename = vc.get_png_file()
-        tasks = [create_reply_task(cmdargline.cmdline, text, filename)]
-        return tasks
+        task = create_reply_task(cmdargline.cmdline, text, filename)
+        send_task(task)
 
 
 class Cmd_Download(CLBCmd):
@@ -92,12 +93,12 @@ class Cmd_Download(CLBCmd):
         self._documentation = "非公式APIから問題データをDL"
         self._data = data
 
-    def run(self, cmdargline, pointer):
+    def run(self, cmdargline, pointer, send_task):
         api = AtCoderAPI(self._data)
         api.download()
         text = "問題データをダウンロードしました"
-        tasks = [create_reply_task(cmdargline.cmdline, text)]
-        return tasks
+        task = create_reply_task(cmdargline.cmdline, text)
+        send_task(task)
 
 
 def create_avc_backend(data):
