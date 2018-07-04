@@ -2,7 +2,7 @@ from typing import List, Union, cast
 import re
 
 from .avc import AtCoderVirtualContest, AtCoderAPI
-from ..core.clb_interface import CLBTask, CLBTask_Msg, CLBTask_DM, create_reply_task
+from ..core.clb_interface import CLBTask, CLBTask_Msg, CLBTask_DM, CLBTask_Gathered, create_reply_task
 from ..core.clb_error import CLBError
 from ..core.clb_data import CLBData
 from ..ends.cmd_arg_backend import CmdArgBackEnd, CLBCmd, CLBCmdWithSub, CLBCmdArgLine
@@ -33,7 +33,8 @@ class Cmd_Show(CLBCmd):
         vc = AtCoderVirtualContest(contest_id, self._data)
         vc_info = vc.get_contest_info()
         print(vc_info)
-        tasks = [create_reply_task(cmdargline.cmdline, vc_info)]
+        task = create_reply_task(cmdargline.cmdline, vc_info)
+        tasks = [task]
         return tasks
 
 

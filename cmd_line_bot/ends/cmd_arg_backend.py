@@ -70,7 +70,7 @@ class CLBCmd(metaclass=ABCMeta):
     @abstractmethod
     def run(self,
             cmdargline: CLBCmdArgLine,
-            pointer: int) -> List[Union[CLBTask, List[CLBTask]]]:
+            pointer: int) -> List[CLBTask]:
         pass
 
 
@@ -103,7 +103,7 @@ class CmdArgBackEnd(CLBBackEnd):
         self._parser = parser
         self._rootcmd = rootcmd
 
-    def manage_cmdline(self, cmdline: CLBCmdLine) -> List[Union[CLBTask, List[CLBTask]]]:
+    def manage_cmdline(self, cmdline: CLBCmdLine) -> List[CLBTask]:
         cmdargline = CLBCmdArgLine(cmdline)
         cmdargline.parse(self._parser)
         if len(cmdargline.parsed_content) == 0:

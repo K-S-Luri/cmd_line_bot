@@ -8,7 +8,7 @@ from typing import Callable, Any, List, Union, Optional, cast
 import traceback
 
 from .clb_error import CLBError  # , CLBIndexError
-from .clb_interface import (CLBTask, CLBTask_Msg, CLBTask_DM, CLBDummyTask,
+from .clb_interface import (CLBTask, CLBTask_Msg, CLBTask_DM, CLBTask_Gathered, CLBDummyTask,
                             CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM, CLBDummyCmdLine,
                             create_reply_task)
 
@@ -48,6 +48,10 @@ class CLBOutputFrontEnd(metaclass=ABCMeta):
             self.send_dm(username=task.username,
                          text=task.text,
                          filename=task.filename)
+        elif isinstance(task, CLBTask_Gathered):
+            print("複数メッセージの並列送信はまだ対応してないよ")
+            for t in task:
+                self.send(t)
 
     @abstractmethod
     def kill(self) -> None:
@@ -56,7 +60,7 @@ class CLBOutputFrontEnd(metaclass=ABCMeta):
 
 class CLBBackEnd(metaclass=ABCMeta):
     @abstractmethod
-    def manage_cmdline(self, cmdline: CLBCmdLine) -> List[Union[CLBTask, List[CLBTask]]]:
+    def manage_cmdline(self, cmdline: CLBCmdLine) -> List[CLBTask]:
         pass
 
     @abstractmethod
@@ -87,56 +91,51 @@ class CLBOutputFrontEndThread(Thread):
         super(CLBOutputFrontEndThread, self).__init__()
         self.setDaemon(False)
         self.output_frontend = output_frontend
-        self.queue = Queue()  # type: Queue[Union[CLBTask, List[CLBTask]]]
+        self.queue = Queue()  # type: Queue[CLBTask]
         self._killed = False
 
     def run(self):
         while True:
-            task_group = self.queue.get()
+            task = self.queue.get()
             if self._killed:
                 break
-            if isinstance(task_group, CLBTask):
-                task_group = [task_group]
-            if len(task_group) >= 2:
-                print("複数メッセージの並列送信はまだ対応してないよ")
-            for task in task_group:
-                try:
-                    self.output_frontend.send(task)
-                    send_success = True
-                except CLBError as e:
-                    cmdline = task.cmdline
-                    if cmdline is None:
-                        raise CLBError("cmdlineがNoneです．発言元にエラーメッセージを返せるよう，CLBTaskにはcmdlineを設定してください")
-                    error_msg = e.get_msg_to_discord()
-                    error_task = create_reply_task(cmdline, error_msg)
-                    send_success = False
-                except FileNotFoundError as e:
-                    print(traceback.format_exc())
-                    cmdline = task.cmdline
-                    error_msg = "File Not Found: %s" % task.filename
-                    error_task = create_reply_task(cmdline, error_msg)
-                    send_success = False
-                except Exception as e:
-                    cmdline = task.cmdline
-                    error_msg = traceback.format_exc()
-                    print(cmdline.get_info())
-                    print(error_msg)
-                    # error_msg_format = "```\n%s```" % error_msg  # code block にすると変なところで改行される
-                    error_task = create_reply_task(cmdline, error_msg)
-                    send_success = False
-                finally:
-                    if not send_success:
-                        try:
-                            self.output_frontend.send(error_task)
-                        except CLBError as e_:
-                            print("%sをfrontendに送信する過程でエラー1が発生し，" % task)
-                            print("さらにエラー1の情報をfrontendに送信する過程でエラー2が発生しました")
-                            print("[エラー1]", error_msg)
-                            print("[エラー2]", e_.get_msg_to_discord())
-                            print(traceback.format_exc())
+            try:
+                self.output_frontend.send(task)
+                send_success = True
+            except CLBError as e:
+                cmdline = task.cmdline
+                if cmdline is None:
+                    raise CLBError("cmdlineがNoneです．発言元にエラーメッセージを返せるよう，CLBTaskにはcmdlineを設定してください")
+                error_msg = e.get_msg_to_discord()
+                error_task = create_reply_task(cmdline, error_msg)
+                send_success = False
+            except FileNotFoundError as e:
+                print(traceback.format_exc())
+                cmdline = task.cmdline
+                error_msg = "File Not Found: %s" % task.filename
+                error_task = create_reply_task(cmdline, error_msg)
+                send_success = False
+            except Exception as e:
+                cmdline = task.cmdline
+                error_msg = traceback.format_exc()
+                print(cmdline.get_info())
+                print(error_msg)
+                # error_msg_format = "```\n%s```" % error_msg  # code block にすると変なところで改行される
+                error_task = create_reply_task(cmdline, error_msg)
+                send_success = False
+            finally:
+                if not send_success:
+                    try:
+                        self.output_frontend.send(error_task)
+                    except CLBError as e_:
+                        print("%sをfrontendに送信する過程でエラー1が発生し，" % task)
+                        print("さらにエラー1の情報をfrontendに送信する過程でエラー2が発生しました")
+                        print("[エラー1]", error_msg)
+                        print("[エラー2]", e_.get_msg_to_discord())
+                        print(traceback.format_exc())
 
     def put(self,
-            task_group: Union[CLBTask, List[CLBTask]]) -> None:
+            task_group: CLBTask) -> None:
         self.queue.put(task_group)
 
     def kill(self) -> None:
@@ -148,7 +147,7 @@ class CLBOutputFrontEndThread(Thread):
 class CLBBackEndThread(Thread):
     def __init__(self,
                  backend: CLBBackEnd,
-                 callback: Callable[[Union[CLBTask, List[CLBTask]]], None]) -> None:
+                 callback: Callable[[CLBTask], None]) -> None:
         super(CLBBackEndThread, self).__init__()
         self.setDaemon(False)
         self.backend = backend
@@ -221,5 +220,5 @@ class CmdLineBot:
     def callback_from_inputfrontend(self, cmdline: CLBCmdLine) -> None:
         self.backend_thread.put(cmdline)
 
-    def callback_from_backend(self, task_group: Union[CLBTask, List[CLBTask]]) -> None:
+    def callback_from_backend(self, task_group: CLBTask) -> None:
         self.output_frontend_thread.put(task_group)

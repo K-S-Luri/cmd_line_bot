@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from abc import ABCMeta, abstractmethod
 
 
@@ -78,6 +78,20 @@ class CLBTask_DM(CLBTask):
                  cmdline: Optional[CLBCmdLine] = None) -> None:
         super(CLBTask_DM, self).__init__(text, filename, cmdline)
         self.username = username
+
+
+class CLBTask_Gathered(CLBTask):
+    def __init__(self,
+                 task_list: Optional[List[CLBTask]] = None) -> None:
+        if task_list is None:
+            task_list = []
+        self.task_list = task_list
+
+    def append(self, task):
+        self.task_list.append(task)
+
+    def __iter__(self):
+        return iter(self.task_list)
 
 
 class CLBDummyTask(CLBTask):
