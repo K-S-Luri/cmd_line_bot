@@ -32,7 +32,8 @@ def vc_example(test=False):
         input_frontend = dfe.input_frontend
         output_frontend = dfe.output_frontend
     else:
-        input_frontend = TerminalInputFrontEnd()
+        msg_list = ["!show", "!hoge"]
+        input_frontend = TerminalInputFrontEnd(msg_list=msg_list)
         output_frontend = TerminalOutputFrontEnd()
     backend = create_avc_backend(data)
     bot = CmdLineBot([input_frontend], output_frontend, backend)

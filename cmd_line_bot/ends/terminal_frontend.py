@@ -1,14 +1,24 @@
+from typing import List, Optional
+from time import sleep
+
 from ..core.cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd
 from ..core.clb_interface import CLBCmdLine_Msg, CLBCmdLine_DM
 
 
 class TerminalInputFrontEnd(CLBInputFrontEnd):
-    def __init__(self):
-        pass
+    def __init__(self,
+                 msg_list: Optional[List[str]] = None) -> None:
+        if msg_list is None:
+            msg_list = []
+        self.msg_list = msg_list
 
     def run(self, callback):
         while True:
-            content = input("content: ")
+            if self.msg_list:
+                content = self.msg_list.pop(0)
+            else:
+                sleep(0.5)
+                content = input("msg: ")
             channelname = "general"
             author = "Bourbaki"
             cmdline = CLBCmdLine_Msg(content, author, channelname)
