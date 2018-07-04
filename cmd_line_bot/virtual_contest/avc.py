@@ -60,7 +60,7 @@ class AtCoderProblem:
         pattern = r"https://beta\.atcoder\.jp/contests/(.*)/tasks/(.*)"
         match_obj = re.match(pattern, self.url)
         if match_obj is None:
-            raise CLBError("問題のURLが不正です: %s" % self.url)
+            raise CLBError("問題のURLが不正です: {url}".format(url=self.url))
         self.contest_id = match_obj.group(1)
         self.problem_id = match_obj.group(2)
 
@@ -81,7 +81,9 @@ class AtCoderProblem:
         contest_type = match_obj.group(1)
         contest_count = match_obj.group(2)
         problem_alphabet = match_obj.group(3)
-        return "%s %s %s" % (contest_type.upper(), contest_count, problem_alphabet.upper())
+        return "{AXC} {count} {alph}".format(AXC=contest_type.upper(),
+                                             count=contest_count,
+                                             alph=problem_alphabet.upper())
 
     def get_score(self) -> int:
         if "point" not in self.info.keys():
@@ -103,14 +105,14 @@ class AtCoderVirtualContest:
         with urllib.request.urlopen(self.url) as response:
             html = response.read().decode("utf-8")
         with open(self.html_path, "w", encoding="utf-8") as f:
-            print("write to %s" % self.html_path)
+            print("write to {path}".format(path=self.html_path))
             f.write(html)
 
     def get_png_file(self) -> str:
         html = self.read()
         png_path = os.path.join(self.data.get_category_dir(virtual_contest_dir),
                                 self.contest_id+".png")
-        print("write to %s" % png_path)
+        print("write to {path}".format(path=png_path))
         imgkit.from_string(html, png_path)
         return png_path
 
@@ -143,9 +145,9 @@ class AtCoderVirtualContest:
         problems = self.get_problems()
         result = title + "\n"
         for problem in problems:
-            result += "%s %s %s\n" % (problem.get_score(),
-                                      problem.get_id(),
-                                      problem.get_title())
+            result += "{score} {id_} {title}\n".format(score=problem.get_score(),
+                                                       id_=problem.get_id(),
+                                                       title=problem.get_title())
         result += self.url
         return result
 
