@@ -1,7 +1,7 @@
 from pprint import pprint
 import imgkit
 from pyquery import PyQuery
-from typing import List, Tuple, Dict, Any, Optional, cast
+from typing import List, Tuple, Dict, Any, Optional, cast, Match, Union
 import urllib.request
 import os
 import re
@@ -91,6 +91,40 @@ class AtCoderProblem:
         return int(self.info["point"])
 
 
+def parse_score_td(td: PyQuery) -> Dict[str, Union[int, str]]:
+    result = {"score": 0,
+              "WA": 0,
+              "time": "?",
+              "status": "?"}  # type: Dict[str, Union[int, str]]
+    for span in td("span").items():
+        style = span.attr("style")
+        if style == "color: #00AA3E; font-weight: bold;":
+            score = int(span.text())
+            result["score"] = score
+            if score > 0:
+                result["status"] = "AC"
+            else:
+                result["status"] = "NG"
+        elif style == "color: #00F; font-weight: bold;":
+            result["score"] = int(span.text())
+            result["status"] = "TOTAL"
+        elif style == "color: #F00;":
+            match_obj = re.match(r"\(([0-9]+)\)", span.text())
+            match_obj = cast(Match[Any], match_obj)
+            WA_count = match_obj.group(1)
+            result["WA"] = WA_count
+        elif (style is None) and (td.text() == "-"):
+            result["status"] = "NO_SUBMISSION"
+        elif (style is None):
+            match_obj = re.match(r"\[([0-9]+):([0-9]+)\]", span.text())
+            match_obj = cast(Match[Any], match_obj)
+            minute = int(match_obj.group(1))
+            second = int(match_obj.group(2))
+            time_str = "[{minute:02d}:{second:02d}]".format(minute=minute, second=second)
+            result["time"] = time_str
+    return result
+
+
 class AtCoderVirtualContest:
     def __init__(self,
                  contest_id: str,
@@ -151,17 +185,63 @@ class AtCoderVirtualContest:
         result += self.url
         return result
 
+    def get_status_list(self) -> List[Dict[str, Any]]:
+        html = self.read()
+        num_problems = len(self.get_problems())
+        status_list = []
+        query = PyQuery(html)
+        for tr in query("tbody tr").items():
+            username_th = tr("th:nth-child(2)")
+            username = username_th.text()
+            results = []
+            user_status = {"username": username}
+            items = list(tr("td").items())
+            for i in range(num_problems):
+                results.append(parse_score_td(items[i]))
+            user_status["results"] = results
+            user_status["total"] = parse_score_td(items[-1])
+            status_list.append(user_status)
+        return status_list
+
+    def get_AC_dict(self) -> Dict[str, List[int]]:
+        status_list = self.get_status_list()
+        AC_dict = {}  # type: Dict[str, List[int]]
+        for status in status_list:
+            username = status["username"]
+            user_AC_list = []
+            results = status["results"]
+            for i in range(len(results)):
+                problem = results[i]
+                if problem["status"] == "AC":
+                    user_AC_list.append(i)
+            AC_dict[username] = user_AC_list
+        return AC_dict
+
+    def get_new_AC_list(self,
+                        old_virtual_contest: Any) -> List[Tuple[str, int]]:
+        # old_virtual_contest: AtCoderVirtualContest にすると undefinedと言われる…
+        current_AC_dict = self.get_AC_dict()
+        old_AC_dict = old_virtual_contest.get_AC_dict()
+        new_AC_list = []
+        for username, AC_list in current_AC_dict.items():
+            for problem_number in AC_list:
+                if problem_number not in old_AC_dict[username]:
+                    new_AC_list.append((username, problem_number))
+        return new_AC_list
+
 
 def avc_test():
-    import pprint
     data = CLBData()
     contest_id = "6029001596338176"
     vc = AtCoderVirtualContest(contest_id, data)
-    # vc.download()
+    vc.download()
     print(vc.get_contest_info())
     # print(vc.get_title())
     # problems = vc.get_problems()
     # pprint.pprint(problems)
+
+    pprint(vc.get_status_list())
+    pprint(vc.get_AC_dict())
 
     # scores = AtCoderScores(data)
     # scores.download()
