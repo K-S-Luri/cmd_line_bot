@@ -9,12 +9,13 @@
 
 # 動作環境
 - OSは多分何でも大丈夫(Ubuntu上で開発)
-- `python3` (`version >= 3.5`)
+- `python3` (`3.6 >= version >= 3.5`)
     * 一時 `typing.Coroutine` を使っていたので，`3.6` 以上のバージョンが必要だった
     * `Ubuntu 16.04`に`python 3.6`を(ソースからビルドして)インストールする際に，
       `make test`で`test_urllib2net`に失敗した．
       これは，`sudo apt install libssl-dev`することで解決した．
       参考: [Import Error: No module named _ssl](https://stackoverflow.com/questions/5128845/importerror-no-module-named-ssl)
+    * `3.7`だと`import discord`中に謎の`SyntaxError`が起きる
 - 以下のpythonライブラリが必要．環境によっては`sudo`が必要(`sudo -H`の方が良い場合も？)
     * `discord` (`python3 -m pip install -U discord.py`)
     (`discord.py`公式で`-U`って書いてあったからつけてるけど，本当に必要？)
