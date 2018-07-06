@@ -99,3 +99,6 @@ discord:
     * せっかくだから`get_usage`にも反映させる (subcmdを取るかどうかも反映させる)
 - AC 通知の際に，部分点のみの取得でも AC 扱いになってしまう．
     * 例: ARC074D 3N Numbers
+- (新しい環境で)`!dl`する前に`!show`した際のエラーメッセージが不親切
+    * `FileNotFoundError`がそのまま出てきてる
+- `wkhtmltopdf`がないときのエラーも不親切
