@@ -9,8 +9,12 @@ from .clb_error import CLBError
 # ファイルのロックとかした方が良い？
 class CLBData:
     def __init__(self,
-                 config_dir: str = "~/.clb.d") -> None:
-        self.config_dir = os.path.expanduser(config_dir)
+                 config_dir: Optional[str] = None) -> None:
+        if config_dir is None:
+            self.config_dir = os.path.join(os.path.expanduser("~"),
+                                           ".clb.d")
+        else:
+            self.config_dir = os.path.expanduser(config_dir)
         self._config = {}  # type: Dict[str, Dict[str, Union[str, int]]]
         self.load_config()
         self.memory = {}  # type: Dict[str, Dict[str, Union[str, int]]]
