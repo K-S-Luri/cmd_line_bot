@@ -63,6 +63,7 @@ class Cmd_Set(CLBCmd):
         contest_id = self.parse_contest_id(contest_id_raw)
         avc_category = self._avc_data.category
         self._data.set_data(avc_category, "contest_id", contest_id)
+        self._avc_data.old_AC_dict = None  # 問題が変わったので，AC 情報もリセット
         text = "contest_idを{cid}に設定しました".format(cid=contest_id)
         task = create_reply_task(cmdargline.cmdline, text)
         send_task(task)
