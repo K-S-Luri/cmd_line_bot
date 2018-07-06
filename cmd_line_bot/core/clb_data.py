@@ -13,6 +13,7 @@ class CLBData:
         self.config_dir = os.path.expanduser(config_dir)
         self._config = {}  # type: Dict[str, Dict[str, Union[str, int]]]
         self.load_config()
+        self.memory = {}  # type: Dict[str, Dict[str, Union[str, int]]]
 
     def get_config_path(self) -> str:
         return os.path.join(self.config_dir, "config.yaml")
@@ -81,3 +82,20 @@ class CLBData:
     # def add_category(self, category: str) -> None:
     #     if category not in self._data.keys():
     #         self._data[category] = {}
+
+    def get_memory(self,
+                   category: str,
+                   key: str) -> Optional[Union[str, int]]:
+        if category not in self.memory.keys():
+            return None
+        if key not in self.memory[category].keys():
+            return None
+        return self.memory[category][key]
+
+    def set_memory(self,
+                   category: str,
+                   key: str,
+                   value: Union[str, int]) -> None:
+        if category not in self.memory.keys():
+            self.memory[category] = {}
+        self.memory[category][key] = value
