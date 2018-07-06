@@ -34,13 +34,14 @@ def vc_example(test=False):
         input_frontend = dfe.input_frontend
         output_frontend = dfe.output_frontend
     else:
-        msg_list = ["!show", "!hoge"]
+        # msg_list = ["!show"]
+        msg_list = []
         input_frontend = TerminalInputFrontEnd(msg_list=msg_list)
         output_frontend = TerminalOutputFrontEnd()
     # cron frontend
-    cmdline = CLBCmdLine_Msg(content="!ac nolog",
-                             author="bot",
-                             channelname="general")
+    cmdline = CLBCmdLine_Msg(content="!ac show fromcron",
+                             author="vc_bot",
+                             channelname="bot")
     job = CronJob(cmdline=cmdline, second=60)
     cron_input_frontend = CronInputFrontEnd([job])
     # backend

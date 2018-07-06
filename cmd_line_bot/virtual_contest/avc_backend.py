@@ -22,7 +22,7 @@ class RootCmd(CLBCmdWithSub):
                          Cmd_Set(avc_data),
                          Cmd_Img(avc_data),
                          Cmd_Download(avc_data),
-                         Cmd_ShowNewAC(avc_data)]
+                         Cmd_AC(avc_data)]
 
 
 class Cmd_Show(CLBCmd):
@@ -121,21 +121,64 @@ class Cmd_Download(CLBCmd):
             send_task(task)
 
 
-class Cmd_ShowNewAC(CLBCmd):
+class Cmd_AC(CLBCmdWithSub):
     def __init__(self, avc_data: AVCData) -> None:
-        self._keys = ["ac", "newac"]
-        self._documentation = "新たなACの一覧を表示\n引数に'nolog'を追加すると一部のメッセージを抑制する"
+        self._keys = ["ac", "AC"]
+        self._documentation = "AC 通知を扱う．サブコマンドを取る．"
+        self._subcmds = [Cmd_AC_Show(avc_data),
+                         Cmd_AC_Enable(avc_data),
+                         Cmd_AC_Disable(avc_data)]
+
+
+class Cmd_AC_Enable(CLBCmd):
+    def __init__(self, avc_data: AVCData) -> None:
+        self._keys = ["enable", "e"]
+        self._documentation = "自動 AC 通知を有効化する"
         self._avc_data = avc_data
         self._data = self._avc_data.clb_data
 
     def run(self, cmdargline, pointer, send_task):
+        category = self._avc_data.category
+        self._data.set_memory(category, "enable_AC_check", True)
+        text = "自動 AC 通知を有効化しました"
+        task = create_reply_task(cmdargline.cmdline, text)
+        send_task(task)
+
+
+class Cmd_AC_Disable(CLBCmd):
+    def __init__(self, avc_data: AVCData) -> None:
+        self._keys = ["disable", "d"]
+        self._documentation = "自動 AC 通知を無効化する"
+        self._avc_data = avc_data
+        self._data = self._avc_data.clb_data
+
+    def run(self, cmdargline, pointer, send_task):
+        category = self._avc_data.category
+        self._data.set_memory(category, "enable_AC_check", False)
+        text = "自動 AC 通知を無効化しました"
+        task = create_reply_task(cmdargline.cmdline, text)
+        send_task(task)
+
+
+class Cmd_AC_Show(CLBCmd):
+    def __init__(self, avc_data: AVCData) -> None:
+        self._keys = ["show"]
+        self._documentation = "新たなACの一覧を表示"
+        self._avc_data = avc_data
+        self._data = self._avc_data.clb_data
+
+    def run(self, cmdargline, pointer, send_task):
+        category = self._avc_data.category
+        enable_AC_check = self._data.get_memory(category, "enable_AC_check")
         if cmdargline.get_num_args(pointer) > 1:
             raise CLBError("引数が多すぎます")
         elif cmdargline.get_num_args(pointer) == 0:
             verbose = True
         else:
             arg = cmdargline.get_args(pointer)[0]
-            if arg == "nolog":
+            if arg == "fromcron":
+                if not enable_AC_check:  # None or False
+                    return
                 verbose = False
             else:
                 raise CLBError("不正な引数: {arg}".format(arg=arg))
