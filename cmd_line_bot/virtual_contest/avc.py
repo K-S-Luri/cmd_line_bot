@@ -1,4 +1,5 @@
 from pprint import pprint
+from copy import deepcopy
 import imgkit
 from pyquery import PyQuery
 from typing import List, Tuple, Dict, Any, Optional, cast, Match, Union
@@ -174,6 +175,10 @@ class AtCoderVirtualContest:
             result.append(problem)
         return result
 
+    def get_problem(self, i: int) -> AtCoderProblem:
+        problems = self.get_problems()
+        return problems[i]
+
     def get_contest_info(self) -> str:
         title = self.get_title()
         problems = self.get_problems()
@@ -185,7 +190,7 @@ class AtCoderVirtualContest:
         result += self.url
         return result
 
-    def get_status_list(self) -> List[Dict[str, Any]]:
+    def get_status_list(self) -> List[Dict[str, Union[str, List[Any], Dict[str, Union[int, str]]]]]:
         html = self.read()
         num_problems = len(self.get_problems())
         status_list = []
@@ -203,13 +208,22 @@ class AtCoderVirtualContest:
             status_list.append(user_status)
         return status_list
 
+    def search_status_byname(self, username) -> Optional[Dict[str, Any]]:
+        status_list = self.get_status_list()
+        for status in status_list:
+            if status["username"] == username:
+                return status
+        return None
+
     def get_AC_dict(self) -> Dict[str, List[int]]:
         status_list = self.get_status_list()
         AC_dict = {}  # type: Dict[str, List[int]]
         for status in status_list:
             username = status["username"]
+            username = cast(str, username)
             user_AC_list = []
             results = status["results"]
+            results = cast(List[Any], results)
             for i in range(len(results)):
                 problem = results[i]
                 if problem["status"] == "AC":
@@ -218,15 +232,21 @@ class AtCoderVirtualContest:
         return AC_dict
 
     def get_new_AC_list(self,
-                        old_virtual_contest: Any) -> List[Tuple[str, int]]:
-        # old_virtual_contest: AtCoderVirtualContest にすると undefinedと言われる…
+                        old_AC_dict: Optional[Dict[str, List[int]]]) -> List[Tuple[str, int, int]]:
         current_AC_dict = self.get_AC_dict()
-        old_AC_dict = old_virtual_contest.get_AC_dict()
+        if old_AC_dict is None:
+            old_AC_dict = deepcopy(current_AC_dict)
+            for key in old_AC_dict.keys():
+                old_AC_dict[key] = []
         new_AC_list = []
         for username, AC_list in current_AC_dict.items():
             for problem_number in AC_list:
                 if problem_number not in old_AC_dict[username]:
-                    new_AC_list.append((username, problem_number))
+                    status = self.search_status_byname(username)
+                    if status is None:
+                        raise CLBError("バチャコンのhtmlをparseしていて想定外の事態が発生しました")
+                    score = status["results"][problem_number]["score"]
+                    new_AC_list.append((username, problem_number, score))
         return new_AC_list
 
 
@@ -242,6 +262,7 @@ def avc_test():
 
     pprint(vc.get_status_list())
     pprint(vc.get_AC_dict())
+    pprint(vc.get_new_AC_list(None))
 
     # scores = AtCoderScores(data)
     # scores.download()

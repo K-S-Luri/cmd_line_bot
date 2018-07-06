@@ -8,25 +8,32 @@ from ..core.clb_data import CLBData
 from ..ends.cmd_arg_backend import CmdArgBackEnd, CLBCmd, CLBCmdWithSub, CLBCmdArgLine
 
 
-avc_category = "virtual_contest"
+class AVCData:
+    def __init__(self, clb_data):
+        self.clb_data = clb_data
+        self.category = "virtual_contest"
+        self.old_AC_dict = None
 
 
 class RootCmd(CLBCmdWithSub):
-    def __init__(self, data):
+    def __init__(self, avc_data: AVCData) -> None:
         self._documentation = "root command"
-        self._subcmds = [Cmd_Show(data),
-                         Cmd_Set(data),
-                         Cmd_Img(data),
-                         Cmd_Download(data)]
+        self._subcmds = [Cmd_Show(avc_data),
+                         Cmd_Set(avc_data),
+                         Cmd_Img(avc_data),
+                         Cmd_Download(avc_data),
+                         Cmd_ShowNewAC(avc_data)]
 
 
 class Cmd_Show(CLBCmd):
-    def __init__(self, data):
+    def __init__(self, avc_data: AVCData) -> None:
         self._keys = ["show"]
         self._documentation = "バチャコンの概要を表示"
-        self._data = data
+        self._avc_data = avc_data
+        self._data = self._avc_data.clb_data
 
     def run(self, cmdargline, pointer, send_task):
+        avc_category = self._avc_data.category
         contest_id = self._data.get_data(avc_category, "contest_id")
         if contest_id is None:
             raise CLBError("contest_idをsetしてください")
@@ -38,10 +45,11 @@ class Cmd_Show(CLBCmd):
 
 
 class Cmd_Set(CLBCmd):
-    def __init__(self, data: CLBData) -> None:
+    def __init__(self, avc_data: AVCData) -> None:
         self._keys = ["set"]
         self._documentation = "バチャコンの contest_id を設定する．URLコピペでも，数字のみでもOK"
-        self._data = data
+        self._avc_data = avc_data
+        self._data = self._avc_data.clb_data
 
     def run(self,
             cmdargline: CLBCmdArgLine,
@@ -53,6 +61,7 @@ class Cmd_Set(CLBCmd):
             raise CLBError("引数が多すぎます")
         contest_id_raw = cmdargline.get_args(pointer)[0]
         contest_id = self.parse_contest_id(contest_id_raw)
+        avc_category = self._avc_data.category
         self._data.set_data(avc_category, "contest_id", contest_id)
         text = "contest_idを{cid}に設定しました".format(cid=contest_id)
         task = create_reply_task(cmdargline.cmdline, text)
@@ -71,12 +80,14 @@ class Cmd_Set(CLBCmd):
 
 
 class Cmd_Img(CLBCmd):
-    def __init__(self, data):
+    def __init__(self, avc_data: AVCData) -> None:
         self._keys = ["img"]
         self._documentation = "バチャコンのhtmlを画像にして送信"
-        self._data = data
+        self._avc_data = avc_data
+        self._data = self._avc_data.clb_data
 
     def run(self, cmdargline, pointer, send_task):
+        avc_category = self._avc_data.category
         contest_id = self._data.get_data(avc_category, "contest_id")
         if contest_id is None:
             raise CLBError("contest_idをsetしてください")
@@ -88,10 +99,11 @@ class Cmd_Img(CLBCmd):
 
 
 class Cmd_Download(CLBCmd):
-    def __init__(self, data):
+    def __init__(self, avc_data: AVCData) -> None:
         self._keys = ["download", "dl"]
         self._documentation = "非公式APIから問題データをDL，バチャコンのhtmlをDl"
-        self._data = data
+        self._avc_data = avc_data
+        self._data = self._avc_data.clb_data
 
     def run(self, cmdargline, pointer, send_task):
         api = AtCoderAPI(self._data)
@@ -99,6 +111,7 @@ class Cmd_Download(CLBCmd):
         text = "AtCoder非公式APIから問題データをダウンロードしました"
         task = create_reply_task(cmdargline.cmdline, text)
         send_task(task)
+        avc_category = self._avc_data.category
         contest_id = self._data.get_data(avc_category, "contest_id")
         if contest_id is not None:
             vc = AtCoderVirtualContest(contest_id, self._data)
@@ -108,5 +121,49 @@ class Cmd_Download(CLBCmd):
             send_task(task)
 
 
-def create_avc_backend(data):
-    return CmdArgBackEnd(rootcmd=RootCmd(data))
+class Cmd_ShowNewAC(CLBCmd):
+    def __init__(self, avc_data: AVCData) -> None:
+        self._keys = ["ac", "newac"]
+        self._documentation = "新たなACの一覧を表示\n引数に'nolog'を追加すると一部のメッセージを抑制する"
+        self._avc_data = avc_data
+        self._data = self._avc_data.clb_data
+
+    def run(self, cmdargline, pointer, send_task):
+        if cmdargline.get_num_args(pointer) > 1:
+            raise CLBError("引数が多すぎます")
+        elif cmdargline.get_num_args(pointer) == 0:
+            verbose = True
+        else:
+            arg = cmdargline.get_args(pointer)[0]
+            if arg == "nolog":
+                verbose = False
+            else:
+                raise CLBError("不正な引数: {arg}".format(arg=arg))
+        avc_category = self._avc_data.category
+        contest_id = self._data.get_data(avc_category, "contest_id")
+        old_AC_dict = self._avc_data.old_AC_dict
+        new_vc = AtCoderVirtualContest(contest_id, self._data)
+        if verbose:
+            text = "バチャコンのhtmlをDLしています…"
+            task = create_reply_task(cmdargline.cmdline, text)
+            send_task(task)
+        new_vc.download()
+        self._avc_data.old_AC_dict = new_vc.get_AC_dict()
+        new_AC_list = new_vc.get_new_AC_list(old_AC_dict)
+        for new_AC in new_AC_list:
+            username, problem_number, problem_score = new_AC
+            problem = new_vc.get_problem(problem_number)
+            problem_str = "{title} ({score})".format(title=problem.get_title(),
+                                                     score=problem_score)
+            text = "[AC]{username}: {problem_info}".format(username=username, problem_info=problem_str)
+            task = create_reply_task(cmdargline.cmdline, text)
+            send_task(task)
+        if verbose and (len(new_AC_list) == 0):
+            text = "誰も新たなACはしてないよ"
+            task = create_reply_task(cmdargline.cmdline, text)
+            send_task(task)
+
+
+def create_avc_backend(data: CLBData) -> CmdArgBackEnd:
+    avc_data = AVCData(data)
+    return CmdArgBackEnd(rootcmd=RootCmd(avc_data))
