@@ -31,6 +31,7 @@ class Cmd_Show(CLBCmd):
         self._documentation = "バチャコンの概要を表示"
         self._avc_data = avc_data
         self._data = self._avc_data.clb_data
+        self._required_num_args = 0
 
     def run(self, cmdargline, pointer, send_task):
         avc_category = self._avc_data.category
@@ -50,15 +51,16 @@ class Cmd_Set(CLBCmd):
         self._documentation = "バチャコンの contest_id を設定する．URLコピペでも，数字のみでもOK"
         self._avc_data = avc_data
         self._data = self._avc_data.clb_data
+        self._required_num_args = 1
 
     def run(self,
             cmdargline: CLBCmdArgLine,
             pointer: int,
             send_task: Callable[[CLBTask], None]) -> None:
-        if cmdargline.get_num_args(pointer) < 1:
-            raise CLBError("引数が足りません")
-        elif cmdargline.get_num_args(pointer) > 1:
-            raise CLBError("引数が多すぎます")
+        # if cmdargline.get_num_args(pointer) < 1:
+        #     raise CLBError("引数が足りません")
+        # elif cmdargline.get_num_args(pointer) > 1:
+        #     raise CLBError("引数が多すぎます")
         contest_id_raw = cmdargline.get_args(pointer)[0]
         contest_id = self.parse_contest_id(contest_id_raw)
         avc_category = self._avc_data.category
@@ -86,6 +88,7 @@ class Cmd_Img(CLBCmd):
         self._documentation = "バチャコンのhtmlを画像にして送信"
         self._avc_data = avc_data
         self._data = self._avc_data.clb_data
+        self._required_num_args = 0
 
     def run(self, cmdargline, pointer, send_task):
         avc_category = self._avc_data.category
@@ -137,6 +140,7 @@ class Cmd_AC_Enable(CLBCmd):
         self._documentation = "自動 AC 通知を有効化する"
         self._avc_data = avc_data
         self._data = self._avc_data.clb_data
+        self._required_num_args = 0
 
     def run(self, cmdargline, pointer, send_task):
         category = self._avc_data.category
@@ -152,6 +156,7 @@ class Cmd_AC_Disable(CLBCmd):
         self._documentation = "自動 AC 通知を無効化する"
         self._avc_data = avc_data
         self._data = self._avc_data.clb_data
+        self._required_num_args = 0
 
     def run(self, cmdargline, pointer, send_task):
         category = self._avc_data.category
@@ -167,6 +172,7 @@ class Cmd_AC_Show(CLBCmd):
         self._documentation = "新たなACの一覧を表示"
         self._avc_data = avc_data
         self._data = self._avc_data.clb_data
+        self._required_num_args = (0, 1)
 
     def run(self, cmdargline, pointer, send_task):
         category = self._avc_data.category

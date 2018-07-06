@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from abc import ABCMeta, abstractmethod
-from typing import Callable, List, Union, Optional, cast
+from typing import Callable, List, Union, Optional, cast, Tuple
 
 from ..core.cmd_line_bot import CLBBackEnd
 from ..core.clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBTask
@@ -51,9 +51,10 @@ class CLBCmdArgLine:
 
 # コマンドのテンプレート
 class CLBCmd(metaclass=ABCMeta):
-    def __init__(self):
-        self._keys = []
+    def __init__(self) -> None:
+        self._keys = []  # type: List[str]
         self._documentation = "Not documented"
+        self._required_num_args = None  # type: Union[None, int, Tuple[int, Optional[int]]]
 
     def accept_key(self, key: str) -> bool:
         return key in self._keys
@@ -68,6 +69,50 @@ class CLBCmd(metaclass=ABCMeta):
 
     def get_usage(self) -> str:
         return "__%s__ %s\n" % (self.get_keys(), self._documentation)
+
+    def get_required_num_args(self) -> Tuple[int, Optional[int]]:
+        if (not hasattr(self, "_required_num_args")) or (self._required_num_args is None):
+            required_num_args = (0, None)  # type: Tuple[int, Optional[int]]
+        elif isinstance(self._required_num_args, int):
+            required_num_args = (self._required_num_args, self._required_num_args)
+        elif isinstance(self._required_num_args, tuple):
+            required_num_args = cast(Tuple[int, Optional[int]], self._required_num_args)
+        else:
+            raise CLBError("CLBCmd に設定された引数の情報が不正です")
+        return required_num_args
+
+    def has_valid_num_args(self,
+                           cmdargline: CLBCmdArgLine,
+                           pointer: int) -> bool:
+        required_num_args = self.get_required_num_args()
+        req_min, req_max = required_num_args
+        given_num_args = cmdargline.get_num_args(pointer)
+        if given_num_args < req_min:
+            return False
+        elif (req_max is not None) and (given_num_args > req_max):
+            return False
+        return True
+
+    def get_str_valid_num_args(self) -> str:
+        req_min, req_max = self.get_required_num_args()
+        if req_max is None:
+            req_max_str = "∞"
+        else:
+            req_max_str = str(req_max)
+        return "[{req_min}, {req_max}]".format(req_min=req_min, req_max=req_max_str)
+
+    def api_run(self,
+                cmdargline: CLBCmdArgLine,
+                pointer: int,
+                send_task: Callable[[CLBTask], None]) -> None:
+        # 関数名もうちょっと考えよう
+        if not self.has_valid_num_args(cmdargline, pointer):
+            error_msg = "{cmd}の引数の個数({num})が不正です\nRequired: {req}"
+            error_msg = error_msg.format(cmd=cmdargline.get_key(pointer),
+                                         num=cmdargline.get_num_args(pointer),
+                                         req=self.get_str_valid_num_args())
+            raise CLBError(error_msg)
+        self.run(cmdargline, pointer, send_task)
 
     @abstractmethod
     def run(self,
@@ -93,7 +138,7 @@ class CLBCmdWithSub(CLBCmd):
         else:
             for subcmd in self._subcmds:
                 if subcmd.accept(cmdargline, pointer + 1):
-                    subcmd.run(cmdargline, pointer + 1, send_task)
+                    subcmd.api_run(cmdargline, pointer + 1, send_task)
                     return
             error_msg = "サブコマンド名(%s)が不正です\n" % cmdargline.get_key(pointer + 1)
         error_msg += "コマンド一覧:\n"
@@ -117,7 +162,7 @@ class CmdArgBackEnd(CLBBackEnd):
         cmdargline.parse(self._parser)
         if len(cmdargline.parsed_content) == 0:
             return
-        self._rootcmd.run(cmdargline, -1, send_task)
+        self._rootcmd.api_run(cmdargline, -1, send_task)
 
     def kill(self):
         pass
