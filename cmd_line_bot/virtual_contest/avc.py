@@ -199,7 +199,7 @@ class AtCoderVirtualContest:
             username_th = tr("th:nth-child(2)")
             username = username_th.text()
             results = []
-            user_status = {"username": username}
+            user_status = {"username": username}  # type: Dict[str, Union[str, List[Any], Dict[str, Union[int, str]]]]
             items = list(tr("td").items())
             for i in range(num_problems):
                 results.append(parse_score_td(items[i]))
