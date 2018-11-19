@@ -11,6 +11,7 @@ from .clb_error import CLBError  # , CLBIndexError
 from .clb_interface import (CLBTask, CLBTask_Msg, CLBTask_DM, CLBTask_Gathered, CLBDummyTask,
                             CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM, CLBDummyCmdLine,
                             create_reply_task)
+from .error_visualizer import traceback_to_terminal
 
 
 class CLBInputFrontEnd(metaclass=ABCMeta):
@@ -175,7 +176,8 @@ class CLBBackEndThread(Thread):
                 task = create_reply_task(cmdline=cmdline, text=error_msg, filename=None)
                 self.callback(task)
                 print(cmdline.get_info())
-                print(error_msg)
+                error_msg_to_termianl = traceback_to_terminal()
+                print(error_msg_to_termianl)
 
     def put(self, cmdline: CLBCmdLine) -> None:
         self.queue.put(cmdline)
