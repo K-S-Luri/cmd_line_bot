@@ -38,7 +38,7 @@ def _add_wkhtmltoimage_to_path(noerror=False):
     if returncode == 0:         # found
         return 0
     # not found
-    wkhtmltopdf_dir = search_wkhtmltoimage()
+    wkhtmltopdf_dir = _search_wkhtmltoimage()
     if wkhtmltopdf_dir is None:
         if noerror:
             return 1
