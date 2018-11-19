@@ -22,7 +22,8 @@ class RootCmd(CLBCmdWithSub):
                          Cmd_Set(avc_data),
                          Cmd_Img(avc_data),
                          Cmd_Download(avc_data),
-                         Cmd_AC(avc_data)]
+                         Cmd_AC(avc_data),
+                         Cmd_Raise(avc_data)]
 
 
 class Cmd_Show(CLBCmd):
@@ -213,6 +214,17 @@ class Cmd_AC_Show(CLBCmd):
             task = create_reply_task(cmdargline.cmdline, text)
             send_task(task)
 
+
+class Cmd_Raise(CLBCmd):
+    def __init__(self, avc_data: AVCData) -> None:
+        self._keys = ["raise", "r"]
+        self._documentation = "実行時にエラーを吐くだけのコマンド(デバッグ用)"
+        self._avc_data = avc_data
+        self._data = self._avc_data.clb_data
+        self._required_num_args = 0
+
+    def run(self, cmdargline, pointer, send_task):
+        raise Exception("error test!!!")
 
 def create_avc_backend(data: CLBData) -> CmdArgBackEnd:
     avc_data = AVCData(data)
