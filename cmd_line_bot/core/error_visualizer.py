@@ -1,26 +1,42 @@
+from typing import Optional
 import os
 import sys
 import traceback
 import tempfile
-from pygments import highlight
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters import HtmlFormatter, TerminalFormatter
-import imgkit
+try:
+    from pygments import highlight
+    from pygments.lexers import get_lexer_by_name
+    from pygments.formatters import HtmlFormatter, TerminalFormatter
+except ImportError:
+    print("WARNING: failed to import module 'pygments'")
+try:
+    import imgkit
+except ImportError:
+    print("WARNING: failed to import module 'imgkit'")
 
 
 traceback_dir = "traceback"
 
 
-def traceback_to_terminal() -> str:
+def get_traceback() -> str:
     etype, value, tb = sys.exc_info()
     tbtext = "".join(traceback.format_exception(etype, value, tb))
+    return tbtext
+
+
+def get_traceback_for_terminal() -> str:
+    tbtext = get_traceback()
+    if "pygments" not in sys.modules:
+        return tbtext
     lexer = get_lexer_by_name("pytb", stripall=True)
     formatter = TerminalFormatter()
     return highlight(tbtext, lexer, formatter)
 
-def traceback_to_png() -> str:
-    etype, value, tb = sys.exc_info()
-    tbtext = "".join(traceback.format_exception(etype, value, tb))
+
+def save_traceback_as_png() -> Optional[str]:
+    if ("pygments" not in sys.modules) or ("imgkit" not in sys.modules):
+        return None
+    tbtext = get_traceback()
     lexer = get_lexer_by_name("pytb", stripall=True)
     formatter = HtmlFormatter(linenos=True, full=True)
     html = highlight(tbtext, lexer, formatter)

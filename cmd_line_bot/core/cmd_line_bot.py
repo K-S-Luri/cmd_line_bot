@@ -5,13 +5,13 @@ from threading import Thread, Event
 from queue import Queue
 from typing import Callable, Any, List, Union, Optional, cast
 # from pytypes import typechecked
-import traceback
+# import traceback
 
 from .clb_error import CLBError  # , CLBIndexError
 from .clb_interface import (CLBTask, CLBTask_Msg, CLBTask_DM, CLBTask_Gathered, CLBDummyTask,
                             CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM, CLBDummyCmdLine,
                             create_reply_task)
-from .error_visualizer import traceback_to_terminal, traceback_to_png
+from .error_visualizer import get_traceback, get_traceback_for_terminal, save_traceback_as_png
 
 
 class CLBInputFrontEnd(metaclass=ABCMeta):
@@ -113,14 +113,14 @@ class CLBOutputFrontEndThread(Thread):
                 error_task = create_reply_task(cmdline, error_msg)
                 send_success = False
             except FileNotFoundError as e:
-                print(traceback.format_exc())
+                print(get_traceback())
                 cmdline = task.cmdline
                 error_msg = "File Not Found: %s" % task.filename
                 error_task = create_reply_task(cmdline, error_msg)
                 send_success = False
             except Exception as e:
                 cmdline = task.cmdline
-                error_msg = traceback.format_exc()
+                error_msg = get_traceback()
                 print(cmdline.get_info())
                 print(error_msg)
                 # error_msg_format = "```\n%s```" % error_msg  # code block にすると変なところで改行される
@@ -135,7 +135,7 @@ class CLBOutputFrontEndThread(Thread):
                         print("さらにエラー1の情報をfrontendに送信する過程でエラー2が発生しました")
                         print("[エラー1]", error_msg)
                         print("[エラー2]", e_.get_msg_to_discord())
-                        print(traceback.format_exc())
+                        print(get_traceback())
 
     def put(self,
             task: CLBTask) -> None:
@@ -171,14 +171,14 @@ class CLBBackEndThread(Thread):
                 self.callback(task)
                 # print(error_msg)
             except Exception as e:
-                error_msg = traceback.format_exc()
+                error_msg = get_traceback() # traceback.format_exc()
                 # error_msg_format = "```\n%s\n```" % error_msg  # code block にすると変なところで改行される
-                traceback_img_file = traceback_to_png()
+                traceback_img_file = save_traceback_as_png()
                 task = create_reply_task(cmdline=cmdline, text=error_msg,
                                          filename=traceback_img_file)
                 self.callback(task)
                 print(cmdline.get_info())
-                error_msg_to_termianl = traceback_to_terminal()
+                error_msg_to_termianl = get_traceback_for_terminal()
                 print(error_msg_to_termianl)
 
     def put(self, cmdline: CLBCmdLine) -> None:
