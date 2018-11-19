@@ -51,7 +51,7 @@ def check_wkhtmltoimage():
     if os.name == "posix":
         which_command = "which"
     elif os.name == "nt":
-        add_wkhtmltoimage_to_path(noerror=True)
+        _add_wkhtmltoimage_to_path(noerror=True)
         which_command = "where"
     res = subprocess.run([which_command, "wkhtmltoimage"], stdout=subprocess.PIPE)
     returncode = res.returncode
