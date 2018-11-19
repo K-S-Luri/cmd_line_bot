@@ -174,9 +174,12 @@ class CLBBackEndThread(Thread):
                 error_msg = get_traceback() # traceback.format_exc()
                 # error_msg_format = "```\n%s\n```" % error_msg  # code block にすると変なところで改行される
                 traceback_img_file = save_traceback_as_png()
-                task = create_reply_task(cmdline=cmdline, text=error_msg,
-                                         filename=traceback_img_file)
-                self.callback(task)
+                task_msg = create_reply_task(cmdline=cmdline, text=error_msg,
+                                             filename=None)
+                task_img = create_reply_task(cmdline=cmdline, text=None,
+                                             filename=traceback_img_file)
+                self.callback(task_msg)
+                self.callback(task_img)
                 print(cmdline.get_info())
                 error_msg_to_termianl = get_traceback_for_terminal()
                 print(error_msg_to_termianl)
