@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from typing import cast, Optional, Callable, Any, List
 from pytypes import typechecked
+import os
 import asyncio
 from threading import Thread
 from time import sleep
@@ -206,6 +207,8 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
         if filename is None:
             await client.send_message(destination=channel, content=text)
         else:
+            filesize = os.path.getsize(filename) / (1024.0**2)
+            print("Sending file %s (%.2fMB)" % (filename, filesize))
             await client.send_file(destination=channel, fp=filename, content=text)
 
     async def _send_dm(self, username, text, filename=None):
@@ -217,6 +220,8 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
         if filename is None:
             await client.send_message(destination=user, content=text)
         else:
+            filesize = os.path.getsize(filename) / (1024.0**2)
+            print("Sending file %s (%.2fMB)" % (filename, filesize))
             await client.send_file(destination=user, fp=filename, content=text)
 
     def kill(self) -> None:
