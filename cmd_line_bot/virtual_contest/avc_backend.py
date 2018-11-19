@@ -218,16 +218,21 @@ class Cmd_AC_Show(CLBCmd):
 class Cmd_Raise(CLBCmd):
     def __init__(self, avc_data: AVCData) -> None:
         self._keys = ["raise", "r"]
-        self._documentation = "実行時にエラーを吐くだけのコマンド(デバッグ用)"
+        self._documentation = "実行時にエラーを吐くだけのコマンド(デバッグ用)\noptionalな数値引数をとって，その回数だけ(無駄に)再帰した後にエラーを吐く"
         self._avc_data = avc_data
         self._data = self._avc_data.clb_data
         self._required_num_args = (0, 1)
 
     def run(self, cmdargline, pointer, send_task):
+        recursive_max = 20
         if cmdargline.get_num_args(pointer) == 0:
             recursive = 5
         else:
             recursive = int(cmdargline.get_args(pointer)[0])
+            recursive = min(recursive, recursive_max)
+        text = "%s回再帰した後にエラーを吐きます" % recursive
+        task = create_reply_task(cmdargline.cmdline, text)
+        send_task(task)
         self._raise1(recursive)
 
     def _raise1(self, recursive):
