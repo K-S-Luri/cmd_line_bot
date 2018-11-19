@@ -68,7 +68,10 @@ class CLBCmd(metaclass=ABCMeta):
         return self._keys
 
     def get_usage(self) -> str:
-        return "__%s__ %s\n" % (self.get_keys(), self._documentation)
+        keys = ", ".join(map(lambda key: "__`%s`__" % key,
+                             self.get_keys()))
+        keys = "[%s]" % keys
+        return "%s %s\n" % (keys, self._documentation)
 
     def get_required_num_args(self) -> Tuple[int, Optional[int]]:
         if (not hasattr(self, "_required_num_args")) or (self._required_num_args is None):
