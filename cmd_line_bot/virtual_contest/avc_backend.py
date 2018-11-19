@@ -221,10 +221,23 @@ class Cmd_Raise(CLBCmd):
         self._documentation = "実行時にエラーを吐くだけのコマンド(デバッグ用)"
         self._avc_data = avc_data
         self._data = self._avc_data.clb_data
-        self._required_num_args = 0
+        self._required_num_args = (0, 1)
 
     def run(self, cmdargline, pointer, send_task):
-        raise Exception("error test!!!")
+        if cmdargline.get_num_args(pointer) == 0:
+            recursive = 5
+        else:
+            recursive = int(cmdargline.get_args(pointer)[0])
+        self._raise1(recursive)
+
+    def _raise1(self, recursive):
+        if recursive <= 0:
+            raise Exception("error test!!!!!!!!!")
+        self._raise2(recursive - 1)
+    def _raise2(self, recursive):
+        if recursive <= 0:
+            raise Exception("error test!!!!!!!!!")
+        self._raise1(recursive - 1)
 
 def create_avc_backend(data: CLBData) -> CmdArgBackEnd:
     avc_data = AVCData(data)
