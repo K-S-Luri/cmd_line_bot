@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import cast, Optional, Callable, Any, List
+from typing import cast, Optional, Callable, Any, List, Union
 from pytypes import typechecked
 import os
 import asyncio
@@ -205,11 +205,13 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
             await client.send_message(destination=channel, content=initial_text)
             self.initial_msg = False
         if filename is None:
-            await client.send_message(destination=channel, content=text)
+            await self._send_message(client=client,
+                                     destination=channel,
+                                     content=text)
         else:
-            filesize = os.path.getsize(filename) / (1024.0**2)
-            print("Sending file %s (%.2fMB)" % (filename, filesize))
-            await client.send_file(destination=channel, fp=filename, content=text)
+            await self._send_file(client=client,
+                                  destination=channel,
+                                  fp=filename, content=text)
 
     async def _send_dm(self, username, text, filename=None):
         user = self.config.get_user_named(username)
@@ -218,16 +220,54 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
             raise CLBError(error_msg)
         client = self.config.client
         if filename is None:
-            await client.send_message(destination=user, content=text)
+            await self._send_message(client=client,
+                                     destination=user,
+                                     content=text)
         else:
-            filesize = os.path.getsize(filename) / (1024.0**2)
-            print("Sending file %s (%.2fMB)" % (filename, filesize))
-            await client.send_file(destination=user, fp=filename, content=text)
+            await self._send_file(client=client,
+                                  destinaion=user,
+                                  fp=filename, content=text)
 
     def kill(self) -> None:
         client = self.config.client
         if client.is_logged_in:
             asyncio.run_coroutine_threadsafe(client.logout(), client.loop)
+
+    async def _send_message(self,
+                            client: discord.Client,
+                            destination: Union[discord.User, discord.Channel],
+                            content: str) -> None:
+        for splitted in self.split_text(content):
+            await client.send_message(destination=destination, content=splitted)
+
+    async def _send_file(self,
+                         client: discord.Client,
+                         destination: Union[discord.User, discord.Channel],
+                         fp: str,
+                         content: Optional[str]) -> None:
+        filesize = os.path.getsize(fp) / (1024.0**2)
+        # ファイルが大きくなるとdiscordに拒否されるので注意
+        # 閾値は 5MB 〜 10MB くらい？
+        print("Sending file %s (%.2fMB)" % (fp, filesize))
+        if content is None:
+            await client.send_file(destination=destination, fp=fp, content=None)
+            return
+        splitted_text = self.split_text(content)
+        for splitted in splitted_text[:-1]:
+            await client.send_message(destination=destination, content=splitted)
+        await client.send_file(destination=destination, fp=fp, content=splitted_text[-1])
+
+    def split_text(self, text: str) -> List[str]:
+        "2000文字以上送るとdiscordに拒否されるので分割する"
+        max_len = 2000
+        newline_splitted = text.split("\n")
+        result = [""]
+        for line in newline_splitted:
+            if len(result[-1]) + len(line) < max_len:
+                result[-1] += line + "\n"
+            else:
+                result.append(line + "\n")
+        return result
 
 
 class DiscordFrontEnd:
