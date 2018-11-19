@@ -11,7 +11,7 @@ from .clb_error import CLBError  # , CLBIndexError
 from .clb_interface import (CLBTask, CLBTask_Msg, CLBTask_DM, CLBTask_Gathered, CLBDummyTask,
                             CLBCmdLine, CLBCmdLine_Msg, CLBCmdLine_DM, CLBDummyCmdLine,
                             create_reply_task)
-from .error_visualizer import traceback_to_terminal
+from .error_visualizer import traceback_to_terminal, traceback_to_png
 
 
 class CLBInputFrontEnd(metaclass=ABCMeta):
@@ -173,7 +173,9 @@ class CLBBackEndThread(Thread):
             except Exception as e:
                 error_msg = traceback.format_exc()
                 # error_msg_format = "```\n%s\n```" % error_msg  # code block にすると変なところで改行される
-                task = create_reply_task(cmdline=cmdline, text=error_msg, filename=None)
+                traceback_img_file = traceback_to_png()
+                task = create_reply_task(cmdline=cmdline, text=error_msg,
+                                         filename=traceback_img_file)
                 self.callback(task)
                 print(cmdline.get_info())
                 error_msg_to_termianl = traceback_to_terminal()
