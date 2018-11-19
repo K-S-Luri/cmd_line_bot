@@ -7,6 +7,7 @@ from cmd_line_bot.ends.discord_frontend import DiscordFrontEnd
 from cmd_line_bot.ends.example_backend import example_backend
 from cmd_line_bot.ends.cron_frontend import cron_example, CronJob, CronInputFrontEnd
 from cmd_line_bot.ends.terminal_frontend import TerminalInputFrontEnd, TerminalOutputFrontEnd
+from cmd_line_bot.path_resolver import check_wkhtmltoimage
 
 
 def first_example():
@@ -51,4 +52,5 @@ def vc_example(test=False):
 
 
 if __name__ == '__main__':
+    check_wkhtmltoimage()
     vc_example(test=False)
