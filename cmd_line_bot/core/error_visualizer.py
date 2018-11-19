@@ -27,5 +27,6 @@ def traceback_to_png() -> str:
     # output_path = os.path.join(tempfile.mkdtemp(),
     #                            datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%N.png"))
     output_path = tempfile.mkstemp(suffix=".png")[1]
-    imgkit.from_string(string=html, output_path=output_path)
+    options={"minimum-font-size": 32}
+    imgkit.from_string(string=html, output_path=output_path, options=options)
     return output_path
