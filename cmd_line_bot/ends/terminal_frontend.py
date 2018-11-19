@@ -1,6 +1,7 @@
 from typing import List, Optional
 from time import sleep
 import os
+import shutil
 
 from ..core.cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd
 from ..core.clb_interface import CLBCmdLine_Msg, CLBCmdLine_DM
@@ -38,7 +39,8 @@ class TerminalOutputFrontEnd(CLBOutputFrontEnd):
             fileinfo = ""
         else:
             fileinfo = " attached: {filename}".format(filename=filename)
-            os.system("xdg-open {filename} &".format(filename=filename))
+            if shutil.which("xdg-open"):
+                os.system("xdg-open {filename} &".format(filename=filename))
         print(linesep + "[{channelname}]{fileinfo}\n{text}".format(channelname=channelname,
                                                                    fileinfo=fileinfo,
                                                                    text=text))
