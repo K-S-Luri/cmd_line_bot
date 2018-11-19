@@ -33,16 +33,14 @@ def get_traceback_for_terminal() -> str:
     return highlight(tbtext, lexer, formatter)
 
 
-def save_traceback_as_png() -> Optional[str]:
+def save_traceback_as_jpg() -> Optional[str]:
     if ("pygments" not in sys.modules) or ("imgkit" not in sys.modules):
         return None
     tbtext = get_traceback()
     lexer = get_lexer_by_name("pytb", stripall=True)
     formatter = HtmlFormatter(linenos=True, full=True)
     html = highlight(tbtext, lexer, formatter)
-    # output_path = os.path.join(tempfile.mkdtemp(),
-    #                            datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%N.png"))
-    output_path = tempfile.mkstemp(suffix=".png")[1]
+    output_path = tempfile.mkstemp(suffix=".jpg")[1]
     options={"minimum-font-size": 32}
     imgkit.from_string(string=html, output_path=output_path, options=options)
     return output_path
