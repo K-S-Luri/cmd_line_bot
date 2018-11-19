@@ -202,11 +202,13 @@ class Cmd_AC_Show(CLBCmd):
         self._avc_data.old_AC_dict = new_vc.get_AC_dict()
         new_AC_list = new_vc.get_new_AC_list(old_AC_dict)
         for new_AC in new_AC_list:
-            username, problem_number, problem_score = new_AC
+            username, problem_number, problem_score, problem_time = new_AC
             problem = new_vc.get_problem(problem_number)
             problem_str = "{title} ({score})".format(title=problem.get_title(),
                                                      score=problem_score)
-            text = "[AC]{username}: {problem_info}".format(username=username, problem_info=problem_str)
+            text = "[AC]{username}: {problem_info} {time}".format(username=username,
+                                                                  problem_info=problem_str,
+                                                                  time=problem_time)
             task = create_reply_task(cmdargline.cmdline, text)
             send_task(task)
         if verbose and (len(new_AC_list) == 0):

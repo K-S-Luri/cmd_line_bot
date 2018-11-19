@@ -232,7 +232,7 @@ class AtCoderVirtualContest:
         return AC_dict
 
     def get_new_AC_list(self,
-                        old_AC_dict: Optional[Dict[str, List[int]]]) -> List[Tuple[str, int, int]]:
+                        old_AC_dict: Optional[Dict[str, List[int]]]) -> List[Tuple[str, int, int, str]]:
         current_AC_dict = self.get_AC_dict()
         if old_AC_dict is None:
             old_AC_dict = deepcopy(current_AC_dict)
@@ -246,7 +246,8 @@ class AtCoderVirtualContest:
                     if status is None:
                         raise CLBError("バチャコンのhtmlをparseしていて想定外の事態が発生しました")
                     score = status["results"][problem_number]["score"]
-                    new_AC_list.append((username, problem_number, score))
+                    time = status["results"][problem_number]["time"]
+                    new_AC_list.append((username, problem_number, score, time))
         return new_AC_list
 
 
