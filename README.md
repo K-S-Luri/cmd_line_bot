@@ -21,6 +21,8 @@
     (`discord.py`公式で`-U`って書いてあったからつけてるけど，本当に必要？)
     * `pytypes`, `pyyaml`, `imgkit`, `pyquery`, `pygments`
     (`python3 -m pip install pytypes pyyaml imgkit pyquery pygments`)
+- `python3.7`でも色々とアップデートすれば使えるっぽい
+    * `python3 -m pip install -U git+https://github.com/Rapptz/discord.py websockets aiohttp pytypes`
 
 # documentation
 この節の情報は古いよ
