@@ -53,7 +53,7 @@ shellっぽい感じでbotを操作する`CLBBackEnd`．
    でbot用のユーザーを作成する
 2. `bot-token`を取得(コピーしておく)
 3. botを自分のサーバーに追加する
-4. `~/.clb.d/config.yaml` に以下の形のjsonデータを作成
+4. `~/.clb.d/config.yaml` に以下の形のyamlデータを作成
 ```yaml
 discord:
     token: "上で取得したbot-token"
