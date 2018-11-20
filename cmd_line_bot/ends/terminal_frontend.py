@@ -35,24 +35,26 @@ linesep = "----------\n"
 
 class TerminalOutputFrontEnd(CLBOutputFrontEnd):
     def send_msg(self, channelname, text, filename=None):
+        destination_str = "[%s]" % channelname
+        self._send_msg_or_dm(destination_str, text, filename)
+
+    def send_dm(self, username, text, filename=None):
+        destination_str = "<DM@%s>" % username
+        self._send_msg_or_dm(destination_str, text, filename)
+
+    def _send_msg_or_dm(self,
+                        destination_str: str,
+                        text: str,
+                        filename: Optional[str]) -> None:
         if filename is None:
             fileinfo = ""
         else:
             fileinfo = " attached: {filename}".format(filename=filename)
             if shutil.which("xdg-open"):
                 os.system("xdg-open {filename} &".format(filename=filename))
-        print(linesep + "[{channelname}]{fileinfo}\n{text}".format(channelname=channelname,
-                                                                   fileinfo=fileinfo,
-                                                                   text=text))
-
-    def send_dm(self, username, text, filename=None):
-        if filename is None:
-            fileinfo = ""
-        else:
-            fileinfo = " attached: {filename}".format(filename=filename)
-        print(linesep + "<DM@{username}>{fileinfo}\n{text}".format(username=username,
-                                                                   fileinfo=fileinfo,
-                                                                   text=text))
+        print(linesep + "{destination}{fileinfo}\n{text}".format(destination=destination_str,
+                                                                 fileinfo=fileinfo,
+                                                                 text=text))
 
     def kill(self):
         pass
