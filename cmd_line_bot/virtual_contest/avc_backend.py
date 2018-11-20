@@ -1,5 +1,6 @@
-from typing import List, Union, cast, Callable
+from typing import List, Union, cast, Callable, Tuple
 import re
+from datetime import datetime
 
 from .avc import AtCoderVirtualContest, AtCoderAPI
 from ..core.clb_interface import CLBTask, CLBTask_Msg, CLBTask_DM, CLBTask_Gathered, create_reply_task
@@ -201,6 +202,7 @@ class Cmd_AC_Show(CLBCmd):
         new_vc.download()
         self._avc_data.old_AC_dict = new_vc.get_AC_dict()
         new_AC_list = new_vc.get_new_AC_list(old_AC_dict)
+        list_text_and_time = []
         for new_AC in new_AC_list:
             username, problem_number, problem_score, problem_time = new_AC
             problem = new_vc.get_problem(problem_number)
@@ -209,12 +211,27 @@ class Cmd_AC_Show(CLBCmd):
             text = "[AC]{username}: {problem_info} {time}".format(username=username,
                                                                   problem_info=problem_str,
                                                                   time=problem_time)
+            list_text_and_time.append((text, problem_time))
+        for text, _ in sorted(list_text_and_time, key=self.get_time):
             task = create_reply_task(cmdargline.cmdline, text)
             send_task(task)
-        if verbose and (len(new_AC_list) == 0):
-            text = "誰も新たなACはしてないよ"
+        if verbose:
+            if len(new_AC_list) == 0:
+                text = "誰も新たなACはしてないよ"
+            else:
+                text = "AC一覧は以上です"
             task = create_reply_task(cmdargline.cmdline, text)
             send_task(task)
+
+    def get_time(self, text_time: Tuple[str, str]) -> int:
+        text, time_str = text_time
+        match_obj = re.match(r"\[([0-9]+):([0-9]+)\]", time_str)
+        if match_obj is None:
+            print("WARNING: invalid time in '%s'" % text)
+            return -1
+        minutes = int(match_obj.group(1))
+        seconds = int(match_obj.group(2))
+        return minutes*60 + seconds
 
 
 class Cmd_Raise(CLBCmd):
