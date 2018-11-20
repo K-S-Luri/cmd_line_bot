@@ -14,14 +14,14 @@ from cmd_line_bot.path_resolver import check_wkhtmltoimage
 def first_example():
     # frontend
     input_frontend, output_frontend = TrivialInputFrontEnd(), TrivialOutputFrontEnd()
-    d = DiscordFrontEnd()
-    input_frontend = d.input_frontend
-    output_frontend = d.output_frontend
+    # d = DiscordFrontEnd()
+    # input_frontend = d.input_frontend
+    # output_frontend = d.output_frontend
     # cron frontend
     cron_input_frontend = cron_example()
     # backend
     backend = TrivialBackEnd()
-    backend = example_backend
+    # backend = example_backend
     # bot
     bot = CmdLineBot([input_frontend, cron_input_frontend], output_frontend, backend)
     bot.run()

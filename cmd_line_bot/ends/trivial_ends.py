@@ -3,7 +3,7 @@ import asyncio
 from time import sleep
 
 from ..core.cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd, CLBBackEnd, CLBTask
-from ..core.clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBTask_Msg, CLBTask_DM
+from ..core.clb_interface import CLBCmdLine, CLBCmdLine_Msg, CLBTask_Msg, CLBTask_DM, create_reply_task
 
 
 linesep = "----------\n"
@@ -42,22 +42,28 @@ class TrivialOutputFrontEnd(CLBOutputFrontEnd):
 
 
 class TrivialBackEnd(CLBBackEnd):
-    def manage_cmdline(self, cmdline):
+    def manage_cmdline(self, cmdline, send_task):
         assert isinstance(cmdline, CLBCmdLine)
         parsed = self.parse_cmdline(cmdline.content)
         if parsed is None:
             return []
         cmd = parsed[0]
+        if len(parsed) <= 1:
+            return
         name = parsed[1]
-        text = "(%s from %s)\n%s" % (cmdline.type, cmdline.author, parsed[2])
-        tasks = []
-        if cmd == "dm":
-            tasks.append(CLBTask(tasktype="dm", username=name, text=text))
-        if cmd == "msg":
-            tasks.append(CLBTask(tasktype="msg", channelname=name, text=text))
-        if cmd == "file":
-            tasks.append(CLBTask(tasktype="msg", channelname=name, text=text, filename="dice.png"))
-        return tasks
+        text = "%s\n%s" % (cmdline.get_info(), parsed[2])
+        send_task(create_reply_task(cmdline, text))
+        # tasks = []
+        # if cmd == "dm":
+        #     # tasks.append(CLBTask(tasktype="dm", username=name, text=text))
+        #     send_task(create_reply_task(cmdline, text))
+        # if cmd == "msg":
+        #     # tasks.append(CLBTask(tasktype="msg", channelname=name, text=text))
+        #     send_task(CLBTask(tasktype="msg", channelname=name, text=text))
+        # if cmd == "file":
+        #     # tasks.append(CLBTask(tasktype="msg", channelname=name, text=text, filename="dice.png"))
+        #     send_task(CLBTask(tasktype="msg", channelname=name, text=text, filename="dice.png"))
+        # # return tasks
 
     def parse_cmdline(self, cmdline):
         if not cmdline.startswith("!"):
