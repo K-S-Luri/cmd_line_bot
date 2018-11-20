@@ -5,6 +5,7 @@ import shutil
 
 from ..core.cmd_line_bot import CLBInputFrontEnd, CLBOutputFrontEnd
 from ..core.clb_interface import CLBCmdLine_Msg, CLBCmdLine_DM
+from .ipc_server import get_port
 
 linesep = "----------\n"
 
@@ -14,7 +15,7 @@ class IPCOutputFrontEnd(CLBOutputFrontEnd):
                  show_error_image: bool = True) -> None:
         self.host = "localhost"
         if port is None:
-            self.port = 51936
+            self.port = get_port()
         else:
             self.port = port
         self.show_error_image = show_error_image

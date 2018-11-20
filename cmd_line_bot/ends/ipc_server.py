@@ -1,10 +1,20 @@
 import socket
 from time import sleep
 
-host = "localhost"
-port = 51936
+from ..core.clb_data import CLBData
 
-def listen(host, port):
+default_port = 51936
+
+def get_port():
+    data = CLBData()
+    port = data.get_config(category="ipc_frontend", key="port", noerror=True)
+    if port is None:
+        port = default_port
+    return port
+
+def listen(host="localhost", port=None):
+    if port is None:
+        port = get_port()
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen(10)
@@ -25,4 +35,4 @@ def listen(host, port):
 
 
 if __name__ == '__main__':
-    listen(host, port)
+    listen()

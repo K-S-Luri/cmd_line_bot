@@ -40,11 +40,18 @@ class CLBData:
             self._config = yaml.load(f)
             return True
 
-    def get_config(self, category: str, key: str) -> Optional[Union[str, int]]:
+    def get_config(self,
+                   category: str,
+                   key: str,
+                   noerror: bool = False) -> Optional[Union[str, int]]:
         data = self._config
         if data is None:
+            if noerror:
+                return None
             raise CLBError("設定ファイル%sが空です" % self.get_config_path())
         if category not in data:
+            if noerror:
+                return None
             raise CLBError("カテゴリ'%s'が見つかりません" % category)
         if key in data[category]:
             return data[category][key]

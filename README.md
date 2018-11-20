@@ -70,6 +70,16 @@ discord:
 ## PCでのinstallとsetup(Ubuntu)
 1. `sudo apt install python3 python3-pip wkhtmltopdf`
 
+## 設定項目一覧
+    `~/.clb.d/config.yaml`の例
+```yaml
+discord:
+    token: "上記参照"
+    servername: "上記参照"
+ipc_frontend:
+    port: 12345
+```
+
 # TODO
 ## 大事なやつ
 - `CLBTask`に`cmdline`を設定していない状態で`send()`中にエラーが起きると，エラーを吐いてbotが死ぬ．
