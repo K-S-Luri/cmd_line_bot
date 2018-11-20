@@ -212,16 +212,13 @@ class Cmd_AC_Show(CLBCmd):
                                                                   problem_info=problem_str,
                                                                   time=problem_time)
             list_text_and_time.append((text, problem_time))
+        text_concat = ""
         for text, _ in sorted(list_text_and_time, key=self.get_time):
-            task = create_reply_task(cmdargline.cmdline, text)
-            send_task(task)
-        if verbose:
-            if len(new_AC_list) == 0:
-                text = "誰も新たなACはしてないよ"
-            else:
-                text = "AC一覧は以上です"
-            task = create_reply_task(cmdargline.cmdline, text)
-            send_task(task)
+            text_concat += text + "\n"
+        if verbose and (len(new_AC_list) == 0):
+            text_concat += "誰も新たなACはしてないよ"
+        task = create_reply_task(cmdargline.cmdline, text_concat)
+        send_task(task)
 
     def get_time(self, text_time: Tuple[str, str]) -> int:
         text, time_str = text_time

@@ -55,4 +55,4 @@ def vc_example(test=False):
 
 if __name__ == '__main__':
     check_wkhtmltoimage()
-    vc_example(test=True)
+    vc_example(test=False)
