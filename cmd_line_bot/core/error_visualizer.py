@@ -13,12 +13,12 @@ try:
     import imgkit
 except ImportError:
     print("WARNING: failed to import module 'imgkit'")
-try:
-    # Convert ANSI escape character sequences for Windows
-    import colorama
-    colorama.init()
-except ImportError:
-    if os.name == "nt":
+if os.name == "nt":
+    try:
+        # Convert ANSI escape character sequences for Windows
+        import colorama
+        colorama.init()
+    except ImportError:
         print("WARNING: failed to import module 'colorama'")
 
 traceback_dir = "traceback"
