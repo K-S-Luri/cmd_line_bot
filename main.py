@@ -7,6 +7,7 @@ from cmd_line_bot.ends.discord_frontend import DiscordFrontEnd
 from cmd_line_bot.ends.example_backend import example_backend
 from cmd_line_bot.ends.cron_frontend import cron_example, CronJob, CronInputFrontEnd
 from cmd_line_bot.ends.terminal_frontend import TerminalInputFrontEnd, TerminalOutputFrontEnd
+from cmd_line_bot.ends.ipc_frontend import IPCOutputFrontEnd
 from cmd_line_bot.path_resolver import check_wkhtmltoimage
 
 
@@ -38,7 +39,8 @@ def vc_example(test=False):
         # msg_list = ["!show"]
         msg_list = []
         input_frontend = TerminalInputFrontEnd(msg_list=msg_list)
-        output_frontend = TerminalOutputFrontEnd()
+        # output_frontend = TerminalOutputFrontEnd()
+        output_frontend = IPCOutputFrontEnd(show_error_image=True)
     # cron frontend
     cmdline = CLBCmdLine_Msg(content="!ac show fromcron",
                              author="vc_bot",

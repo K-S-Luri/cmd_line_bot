@@ -34,6 +34,10 @@ linesep = "----------\n"
 
 
 class TerminalOutputFrontEnd(CLBOutputFrontEnd):
+    def __init__(self,
+                 show_error_image: bool = True) -> None:
+        self.show_error_image = show_error_image
+
     def send_msg(self, channelname, text, filename=None):
         destination_str = "[%s]" % channelname
         self._send_msg_or_dm(destination_str, text, filename)
@@ -50,7 +54,7 @@ class TerminalOutputFrontEnd(CLBOutputFrontEnd):
             fileinfo = ""
         else:
             fileinfo = " attached: {filename}".format(filename=filename)
-            if shutil.which("xdg-open"):
+            if self.show_error_image and shutil.which("xdg-open"):
                 os.system("xdg-open {filename} &".format(filename=filename))
         print(linesep + "{destination}{fileinfo}\n{text}".format(destination=destination_str,
                                                                  fileinfo=fileinfo,
