@@ -203,6 +203,65 @@ def create_reply_task(cmdline: CLBCmdLine,
                       filename: Optional[str] = None) -> CLBTask:
 ```
 
+# Defined in `cmd_line_bot.core.clb_data`
+
+## CLBData
+
+```python
+class CLBData:
+```
+
+```python
+def __init__(self,
+             config_dir: Optional[str] = None) -> None:
+```
+
+```python
+def get_config_path(self) -> str:
+```
+
+```python
+def get_category_dir(self, category: str) -> str:
+```
+
+```python
+def load_config(self) -> bool:
+```
+
+```python
+def get_config(self,
+               category: str,
+               key: str,
+               noerror: bool = False) -> Optional[Union[str, int]]:
+```
+
+```python
+def get_data(self,
+             category: str,
+             key: str) -> Optional[Union[str, int]]:
+```
+
+```python
+def set_data(self,
+             category: str,
+             key: str,
+             value: Union[str, int]) -> None:
+```
+
+```python
+def get_memory(self,
+               category: str,
+               key: str) -> Optional[Union[str, int]]:
+```
+
+```python
+def set_memory(self,
+               category: str,
+               key: str,
+               value: Union[str, int]) -> None:
+```
+
+
 # Defined in `cmd_line_bot.core.clb_error`
 
 ## CLBError
