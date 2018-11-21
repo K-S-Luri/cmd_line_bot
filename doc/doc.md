@@ -1,7 +1,8 @@
+# class
 ## CLBInputFrontEnd
 `class cmd_line_bot.core.cmd_line_bot.CLBInputFrontEnd`
 
-### `run(callback)`
+### run
 
 ```python
 @abstractmethod
