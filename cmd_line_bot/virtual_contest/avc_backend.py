@@ -202,6 +202,10 @@ class Cmd_AC_Show(CLBCmd):
         new_vc.download()
         self._avc_data.old_AC_dict = new_vc.get_AC_dict()
         new_AC_list = new_vc.get_new_AC_list(old_AC_dict)
+        if len(new_AC_list) == 0:
+            if verbose:
+                text_concat += "誰も新たなACはしてないよ"
+            return
         list_text_and_time = []
         for new_AC in new_AC_list:
             username, problem_number, problem_score, problem_time = new_AC
@@ -215,8 +219,6 @@ class Cmd_AC_Show(CLBCmd):
         text_concat = ""
         for text, _ in sorted(list_text_and_time, key=self.get_time):
             text_concat += text + "\n"
-        if verbose and (len(new_AC_list) == 0):
-            text_concat += "誰も新たなACはしてないよ"
         task = create_reply_task(cmdargline.cmdline, text_concat)
         send_task(task)
 
