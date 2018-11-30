@@ -238,6 +238,7 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
                             destination: Union[discord.User, discord.Channel],
                             content: str) -> None:
         for splitted in self.split_text(content):
+            splitted = self.fix_content(splitted)
             await client.send_message(destination=destination, content=splitted)
 
     async def _send_file(self,
@@ -254,7 +255,9 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
             return
         splitted_text = self.split_text(content)
         for splitted in splitted_text[:-1]:
+            splitted = self.fix_content(splitted)
             await client.send_message(destination=destination, content=splitted)
+        # 添付ファイルがあれば空メッセージでもok
         await client.send_file(destination=destination, fp=fp, content=splitted_text[-1])
 
     def split_text(self, text: str) -> List[str]:
@@ -268,6 +271,12 @@ class DiscordOutputFrontEnd(CLBOutputFrontEnd):
             else:
                 result.append(line + "\n")
         return result
+
+    def fix_content(self, content: str) -> str:
+        # 空メッセージは送れない
+        if len(content.split()) == 0:  # whitespaceのみからなる文字列だった場合
+            return "<EMPTY STRING>"
+        return content
 
 
 class DiscordFrontEnd:
