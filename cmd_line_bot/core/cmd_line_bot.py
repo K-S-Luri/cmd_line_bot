@@ -113,7 +113,7 @@ class CLBOutputFrontEndThread(Thread):
                 error_task = create_reply_task(cmdline, error_msg)
                 send_success = False
             except FileNotFoundError as e:
-                print(get_traceback())
+                print(get_traceback_for_terminal())
                 cmdline = task.cmdline
                 error_msg = "File Not Found: %s" % task.filename
                 error_task = create_reply_task(cmdline, error_msg)
@@ -122,7 +122,7 @@ class CLBOutputFrontEndThread(Thread):
                 cmdline = task.cmdline
                 error_msg = get_traceback()
                 print(cmdline.get_info())
-                print(error_msg)
+                print(get_traceback_for_terminal())
                 # error_msg_format = "```\n%s```" % error_msg  # code block にすると変なところで改行される
                 error_task = create_reply_task(cmdline, error_msg)
                 send_success = False
@@ -135,7 +135,7 @@ class CLBOutputFrontEndThread(Thread):
                         print("さらにエラー1の情報をfrontendに送信する過程でエラー2が発生しました")
                         print("[エラー1]", error_msg)
                         print("[エラー2]", e_.get_msg_to_discord())
-                        print(get_traceback())
+                        print(get_traceback_for_terminal())
 
     def put(self,
             task: CLBTask) -> None:
