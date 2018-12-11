@@ -241,7 +241,7 @@ class AtCoderVirtualContest:
         new_AC_list = []
         for username, AC_list in current_AC_dict.items():
             for problem_number in AC_list:
-                if problem_number not in old_AC_dict[username]:
+                if (username not in old_AC_dict) or (problem_number not in old_AC_dict[username]):
                     status = self.search_status_byname(username)
                     if status is None:
                         raise CLBError("バチャコンのhtmlをparseしていて想定外の事態が発生しました")
