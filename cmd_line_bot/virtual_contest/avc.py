@@ -58,7 +58,7 @@ class AtCoderProblem:
         self.set_info()
 
     def set_id(self) -> None:
-        pattern = r"https://beta\.atcoder\.jp/contests/(.*)/tasks/(.*)"
+        pattern = r"https://atcoder\.jp/contests/(.*)/tasks/(.*)"
         match_obj = re.match(pattern, self.url)
         if match_obj is None:
             raise CLBError("問題のURLが不正です: {url}".format(url=self.url))
@@ -276,8 +276,8 @@ def avc_test():
     #     print("searching %s..." % problem_id)
     #     pprint.pprint(api.search(problem_id))
 
-    # urls = ["https://beta.atcoder.jp/contests/cf17-final-open/tasks/cf17_final_b",
-    #         "https://beta.atcoder.jp/contests/arc076/tasks/arc076_b"]
+    # urls = ["https://atcoder.jp/contests/cf17-final-open/tasks/cf17_final_b",
+    #         "https://atcoder.jp/contests/arc076/tasks/arc076_b"]
     # for url in urls:
     #     problem = AtCoderProblem(url, data)
     #     # pprint.pprint(problem.info)
