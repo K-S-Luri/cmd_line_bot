@@ -6,6 +6,10 @@ import datetime
 ServerName = NewType("ServerName", str)
 
 
+class VCError(Exception):
+    "virtual_contest 内で発生したエラー用のクラス"
+
+
 class Result(Enum):
     "回答結果．とりあえず AtCoder に準拠しているけど，必要があれば他のサイトのものも加える"
     AC = auto()   # Accepted
@@ -24,7 +28,8 @@ class Result(Enum):
 
 class User:
     "ユーザーを表すクラス．一人のユーザーが複数のサイトにアカウントを持っている(かもしれない)想定"
-    def __init__(self) -> None:
+    def __init__(self, name: str) -> None:
+        self.name: str = name
         self.ids: Dict[ServerName, str] = {}  # {"atcoder": "hoge", "aoj": "hoge1234"}
 
     def set_id(self, server_name: ServerName, user_id: str) -> None:
@@ -69,8 +74,8 @@ class Submission:
 
 
 if __name__ == '__main__':
-    hoge = User()
-    fuga = User()
+    hoge = User(name="hoge")
+    fuga = User(name="fuga")
     print(hoge == fuga)
     prob = Problem(url="https://atcoder.jp/...", server_name=ServerName("atcoder"))
     prob2 = Problem(url="https://atcoder.jp/...", server_name=ServerName("atcoder"))
