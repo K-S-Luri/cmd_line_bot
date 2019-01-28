@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
 import datetime
 from typing import List
-from .base import ServerName, Result, User, Problem, Submission, VCError
+
+from .base import ServerName, User, Problem, Submission, VCError, VCDuplicateUserError
 
 
 class VCServer(metaclass=ABCMeta):
@@ -47,11 +48,19 @@ start は常に「バチャコン開始時刻」である．取得済みかど�
 このメソッド内ではサーバーには接続せず，update_submissions で取得済みの情報を参照する．"""
         pass
 
-    def add_user(self, user: User) -> None:
+    def add_user(self,
+                 user: User,
+                 noerror: bool = False) -> None:
         if self.name not in user.ids:
             msg = "Not found: {user_name}'s account in {server_name}"
             raise VCError(msg.format(user_name=user.name,
                                      server_name=self.name))
+        if user in self.users:
+            if noerror:
+                return
+            msg = "User {user_name} already added in server {server_name}"
+            raise VCDuplicateUserError(msg.format(user_name=user.name,
+                                                  server_name=self.name))
         self.users.append(user)
 
     def add_problem(self, problem: Problem) -> None:

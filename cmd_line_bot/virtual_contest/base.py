@@ -7,7 +7,11 @@ ServerName = NewType("ServerName", str)
 
 
 class VCError(Exception):
-    "virtual_contest 内で発生したエラー用のクラス"
+    "virtual_contest 内で発生した，想定範囲内のエラー"
+
+
+class VCDuplicateUserError(VCError):
+    "User を重複して登録しようとしたときに送出するエラー"
 
 
 class Result(Enum):
