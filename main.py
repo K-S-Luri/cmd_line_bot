@@ -28,7 +28,7 @@ def first_example():
 
 
 def vc_example(test=False):
-    from cmd_line_bot.virtual_contest.avc_backend import create_avc_backend
+    from cmd_line_bot.virtual_contest_watcher.avc_backend import create_avc_backend
     data = CLBData()
     # メインのfrontend
     if not test:
