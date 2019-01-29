@@ -46,12 +46,17 @@ class Problem:
                  server_name: ServerName) -> None:
         self.url: str = url     # 問題のURL(例: "https://atcoder.jp/contests/practice/tasks/practice_1")
         self.server_name: ServerName = server_name
-        self.name: str = "NONAME"  # 問題名(例: 「はじめてのあっとこーだー」)
+        self.name: str = ""  # 問題名(例: 「はじめてのあっとこーだー」)
         self.score: int = 0     # 実際のスコア計算には使わず，summaryの表示(？)のみに使う
 
     def set_data(self, name: str, score: int):
         self.name = name
         self.score = score
+
+    def __str__(self) -> str:
+        if self.name == "":
+            return self.url
+        return "{name}, {score}".format(name=self.name, score=self.score)
 
 
 class Submission:
@@ -79,6 +84,12 @@ class Submission:
         assert self.score == other.score
         assert self.time == other.time
         return True
+
+    def __str__(self) -> str:
+        return "{problem}, {user}, {result}, {score}".format(problem=self.problem.name,
+                                                             user=self.user.name,
+                                                             result=str(self.result),
+                                                             score=self.score)
 
 
 if __name__ == '__main__':

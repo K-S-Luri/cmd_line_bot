@@ -11,10 +11,15 @@ if __name__ == '__main__':
     user.set_id(server_name=server.name, user_id="bourbaki")
     server.add_user(user)
     # problem の準備
-    problem = Problem(url="http://example.com/problem_hoge", server_name=server.name)
-    server.add_problem(problem)
+    problem1 = Problem(url="http://example.com/problem_hoge", server_name=server.name)
+    server.add_problem(problem1)
+    problem2 = Problem(url="http://example.com/problem_fuga", server_name=server.name)
+    server.add_problem(problem2)
     # update
     server.update_problems()
-    for _ in range(10):
+    for _ in range(5):
         server.update_submissions(datetime.now())
-    print(server.get_submissions(user, problem))
+    for prob in [problem1, problem2]:
+        print("[{prob}]".format(prob=prob))
+        for submission in server.get_submissions(user, prob):
+            print(submission)

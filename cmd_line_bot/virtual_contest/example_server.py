@@ -31,14 +31,24 @@ class ExampleServer(VCServer):
         for user in self.users:
             i = randrange(len(self.problems))
             problem = self.problems[i]
-            result = Result.AC
+            # result をランダムに生成
+            r = randrange(3)
+            if r == 0:
+                result = Result.AC
+                score = problem.score  # 実際にはサーバーから取得した値を使う
+            elif r == 1:
+                result = Result.TLE
+                score = 0
+            else:
+                result = Result.WA
+                score = 0
             time = datetime(year=2019, month=1, day=1,
                             hour=0, minute=0, second=0)
             time += timedelta(seconds=self.count)
             submission = Submission(problem=problem,
                                     user=user,
                                     result=result,
-                                    score=100,
+                                    score=score,
                                     time=time,
                                     id_=str(self.count))
             self.submissions[user][problem].append(submission)
