@@ -10,16 +10,18 @@ from .vcserver import VCServer
 
 
 class ExampleServer(VCServer):
-    name: ServerName = ServerName("example_server")
+    name: ServerName = ServerName("example")
 
     def __init__(self):
         super().__init__()
         self.submissions: Dict[User, Dict[Problem, List[Submission]]] = {}
-        self.count: int = 0
+        self.count: int = 0     # submission の id とか time をテキトーに生成するために使う
 
     def update_problems(self) -> None:
-        for problem in self.problems:
-            pass
+        for i, problem in enumerate(self.problems):
+            problem_name = "problem_{num}".format(num=i+1)
+            problem_score = (i+1) * 100
+            problem.set_data(name=problem_name, score=problem_score)
 
     def update_submissions(self,
                            start: datetime,
@@ -28,7 +30,8 @@ class ExampleServer(VCServer):
             if user not in self.submissions:
                 self.submissions[user] = {}
             for problem in self.problems:
-                self.submissions[user][problem] = []
+                if problem not in self.submissions[user]:
+                    self.submissions[user][problem] = []
         for user in self.users:
             i = randrange(len(self.problems))
             problem = self.problems[i]

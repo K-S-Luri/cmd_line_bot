@@ -49,6 +49,10 @@ class Problem:
         self.name: str = "NONAME"  # 問題名(例: 「はじめてのあっとこーだー」)
         self.score: int = 0     # 実際のスコア計算には使わず，summaryの表示(？)のみに使う
 
+    def set_data(self, name: str, score: int):
+        self.name = name
+        self.score = score
+
 
 class Submission:
     def __init__(self,
