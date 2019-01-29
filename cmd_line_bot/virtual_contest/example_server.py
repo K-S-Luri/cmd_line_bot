@@ -1,12 +1,14 @@
 import re
-from typing import Dict, Optional, List
+from typing import Optional, List, DefaultDict
 from datetime import datetime, timedelta
 from random import randrange
 from collections import defaultdict
 
-
 from .base import ServerName, User, Problem, Submission, Result
 from .vcserver import VCServer
+
+
+SubmissionDict = DefaultDict[User, DefaultDict[Problem, List[Submission]]]
 
 
 class ExampleServer(VCServer):
@@ -14,7 +16,7 @@ class ExampleServer(VCServer):
 
     def __init__(self):
         super().__init__()
-        self.submissions: Dict[User, Dict[Problem, List[Submission]]] = {}
+        self.submissions: SubmissionDict = defaultdict(lambda: defaultdict(lambda: []))
         self.count: int = 0     # submission の id とか time をテキトーに生成するために使う
 
     def update_problems(self) -> None:
@@ -26,12 +28,6 @@ class ExampleServer(VCServer):
     def update_submissions(self,
                            start: datetime,
                            end: Optional[datetime] = None) -> None:
-        for user in self.users:
-            if user not in self.submissions:
-                self.submissions[user] = {}
-            for problem in self.problems:
-                if problem not in self.submissions[user]:
-                    self.submissions[user][problem] = []
         for user in self.users:
             i = randrange(len(self.problems))
             problem = self.problems[i]
