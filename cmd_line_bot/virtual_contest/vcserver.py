@@ -48,6 +48,16 @@ start は常に「バチャコン開始時刻」である．取得済みかど�
 このメソッド内ではサーバーには接続せず，update_submissions で取得済みの情報を参照する．"""
         pass
 
+    @abstractmethod
+    def accept_url(self, url: str) -> bool:
+        "url がこのサーバーのものかどうかを bool で返す"
+
+    def create_problem(self, url: str) -> Problem:
+        "url で与えられる Problem のインスタンスを返す"
+        if not self.accept_url(url):
+            raise VCError("Invalid url for this server {server_name}".format(server_name=self.name))
+        return Problem(url=url, server_name=self.name)
+
     def add_user(self,
                  user: User,
                  noerror: bool = False) -> None:
