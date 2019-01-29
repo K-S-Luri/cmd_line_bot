@@ -20,6 +20,7 @@ class ExampleServer(VCServer):
         self.count: int = 0     # submission の id とか time をテキトーに生成するために使う
 
     def update_problems(self) -> None:
+        "問題の名前はテキトーに生成"
         for i, problem in enumerate(self.problems):
             problem_name = "problem_{num}".format(num=i+1)
             problem_score = (i+1) * 100
@@ -28,6 +29,7 @@ class ExampleServer(VCServer):
     def update_submissions(self,
                            start: datetime,
                            end: Optional[datetime] = None) -> None:
+        "update するたびにランダムに submit される"
         for user in self.users:
             i = randrange(len(self.problems))
             problem = self.problems[i]
@@ -51,12 +53,14 @@ class ExampleServer(VCServer):
                                     score=score,
                                     time=time,
                                     id_=str(self.count))
+            # defaultdict なので存在しないキーにアクセスしても平気
             self.submissions[user][problem].append(submission)
             self.count += 1
 
     def get_submissions(self,
                         user: User,
                         problem: Problem) -> List[Submission]:
+        # defaultdict なので存在しないキーにアクセスしても平気
         return self.submissions[user][problem]
 
     def accept_url(self, url: str) -> bool:
