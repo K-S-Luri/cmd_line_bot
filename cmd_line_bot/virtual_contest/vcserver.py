@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
-import datetime
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 from .base import ServerName, User, Problem, Submission, VCError, VCDuplicateUserError
 
@@ -15,7 +15,7 @@ class VCServer(metaclass=ABCMeta):
 コンテナの型は
 - List[Submission]
 - Dict[User, List[Submission]]
-- Dict[Tuple[User, Problem], Submission]
+- Dict[Tuple[User, Problem], List[Submission]]
 あたりのどれかが良い？
 最終的に get_submissions がちゃんと動くのであれば，内部実装は何でも良い"""
         self.users: List[User] = []
@@ -28,12 +28,12 @@ class VCServer(metaclass=ABCMeta):
 
     @abstractmethod
     def update_submissions(self,
-                           start: datetime.datetime,
-                           end: datetime.datetime = None) -> None:
+                           start: datetime,
+                           end: Optional[datetime] = None) -> None:
         """submission の一覧をサーバーから取ってくる
 
 start: バチャコン開始時刻
-end: バチャコン終了時刻
+end: バチャコン終了時刻 (None なら5000兆年後)
 
 start は常に「バチャコン開始時刻」である．取得済みかどうかは関係ない．
 なので，キャッシュはサブクラスで実装する．"""
