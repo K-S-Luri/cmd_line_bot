@@ -13,15 +13,15 @@ from .vcserver import VCServer
 SubmissionDict = DefaultDict[User, DefaultDict[Problem, List[Submission]]]
 
 
-class ExampleServer(VCServer):
+class AtCoderServer(VCServer):
     name: ServerName = ServerName("AtCoder")
+    DEFAULT_TIME: datetime = datetime(1, 1, 1, 0, 0, 0)
 
     def __init__(self):
         super().__init__()
         self.submissions: SubmissionDict = defaultdict(lambda: defaultdict(lambda: []))
         self.count: int = 0     # submission の id とか time をテキトーに生成するために使う
         self.submission_urls = [] # 提出画面urlのリスト
-        self.DEFAULT_TIME = datetime(1, 1, 1, 0, 0, 0)
         self.time_cache = self.DEFAULT_TIME
         self.table_header_names = []
         self.result_labels = ["AC", "CE", "MLE", "TLE", "RE", "OLE", "IE", "WA", "WJ", "WR", "NG"]
