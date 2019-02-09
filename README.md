@@ -58,6 +58,11 @@ pip install .
 
 - 権限で怒られるなら `sudo pip install .` か `pip install --user .`
 - `python` のバージョンが複数あったりする場合は `python3.6 -m pip install .` みたいな感じで．
+- 以下の warning が出るかもしれないけど，気にしない
+```
+discord-py 0.16.12 has requirement aiohttp<1.1.0,>=1.0.0, but you'll have aiohttp 3.5.4 which is incompatible.
+discord-py 0.16.12 has requirement websockets<4.0,>=3.1, but you'll have websockets 7.0 which is incompatible.
+```
 
 ## 設定項目一覧
     `~/.clb.d/config.yaml`の例

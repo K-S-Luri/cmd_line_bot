@@ -23,5 +23,11 @@ setup(
         "websockets>=6.0",      # for 3.7
         "aiohttp>=3.5",         # for 3.7
     ],
-    packages=["cmd_line_bot"]
+    packages=[
+        "cmd_line_bot",
+        "cmd_line_bot.core",
+        "cmd_line_bot.ends",
+        "cmd_line_bot.virtual_contest",
+        "cmd_line_bot.virtual_contest_watcher"
+    ]
 )
