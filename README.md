@@ -56,6 +56,7 @@ pip install .
 ```
 を実行する．
 
+- ある程度新しいバージョンの `pip` が必要なので，予め `pip install -U pip` しておく．
 - 権限で怒られるなら `sudo pip install .` か `pip install --user .`
 - `python` のバージョンが複数あったりする場合は `python3.6 -m pip install .` みたいな感じで．
 - 以下の warning が出るかもしれないけど，気にしない
