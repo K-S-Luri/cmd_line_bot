@@ -14,7 +14,8 @@ setup(
     version="1.0",
     install_requires=[
         "discord.py@git+https://github.com/Rapptz/discord.py@async",
-        "pytypes",
+        # "pytypes",
+        "typeguard",
         "pyyaml",
         "imgkit",
         "pyquery",
