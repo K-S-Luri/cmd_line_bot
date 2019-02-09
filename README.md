@@ -70,7 +70,9 @@ ipc_frontend:
 ```
 
 # development
-[tutorial.md](doc/tutorial.md) に簡単な tutorial が書いてあるので，参考にすると良いかも．
+- [tutorial.md](doc/tutorial.md) に簡単な tutorial が書いてあるので，参考にすると良いかも．
+- [cmd_line_bot.svg](cmd_line_bot.svg) に依存関係のグラフがある．
+  (`pydeps cmd_line_bot` で生成した)
 
 以下は古い情報です．
 
