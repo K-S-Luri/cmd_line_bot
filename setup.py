@@ -29,5 +29,8 @@ setup(
         "cmd_line_bot.ends",
         "cmd_line_bot.virtual_contest",
         "cmd_line_bot.virtual_contest_watcher"
-    ]
+    ],
+    package_data={
+        "cmd_line_bot": ["py.typed"]
+    }
 )
