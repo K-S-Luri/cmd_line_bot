@@ -28,14 +28,16 @@ class AtCoderServer(VCServer):
         self.result_types = [Result.AC, Result.CE, Result.MLE, Result.TLE, Result.RE, Result.OLE, Result.IE, Result.WA, Result.WJ, Result.WR, Result.NG]
 
     def update_problems(self) -> None:
-        for problem in enumerate(self.problems):
-            if problem.server_name == self.server_name:
+        for problem in self.problems:
+            if problem.server_name == self.name:
                 with urllib.request.urlopen(problem.url) as response:
                     html_str = response.read().decode("utf-8")
                     query = pq(html_str)
                 name_query = query("#main-container > div.row > div:nth-child(2) > span")
                 name_str = name_query.text()
                 name_match = re.search("-\s", name_str)
+                if name_match is None:
+                    raise Exception("This can't happen!")
                 problem_name = name_str[name_match.end():]
                 score_query = query("#task-statement > span > span.lang-ja > p > var")
                 score_str = score_query.text()
@@ -50,14 +52,16 @@ class AtCoderServer(VCServer):
                            end: Optional[datetime] = None) -> None:
         if self.time_cache == self.DEFAULT_TIME:
             self.time_cache = start 
-        for problem in enumerate(self.problems):
+        for problem in self.problems:
             base_url = problem.url
             url_match = re.search("tasks", base_url)
+            if url_match is None:
+                raise Exception("This can't happen!")
             submission_url = base_url[0:url_match.start()] + "submissions"
             if submission_url not in self.submission_urls:
                 self.submission_urls.append(submission_url)
         now_time = datetime.now()
-        for submission_url in submission_urls:
+        for submission_url in self.submission_urls:
             must_check_next_page = True
             page_count = 1
             # 1ページごとにtime_cacheで行われた提出まで見ていく
@@ -68,50 +72,56 @@ class AtCoderServer(VCServer):
                     query = pq(html_str)
                 # 表の親を取ってくる
                 table = query("#main-container > div.row > div:nth-child(3) > div.panel.panel-default.panel-submission > div.table-responsive > table")
-                if table_header_names == []:
+                if self.table_header_names == []:
                     # 表のヘッダ部を取ってくる
                     theads = table("thead > tr > th")
                     # 表のヘッダ部の名前をリストに格納する
                     for thead in theads:
                         thead_text = pq(thead).text()
-                        table_header_names.append(thead_text)
+                        self.table_header_names.append(thead_text)
                 # 各行のデータをとってくる
                 rows = table("tbody > tr")
                 for row in rows:
                     row_contents = dict()
                     columns = pq(row)("td")
-                    for column_name, column in zip(table_header_names, columns):
+                    for column_name, column in zip(self.table_header_names, columns):
                         row_contents[column_name] = pq(column)
                     # まず時間を確認する
-                    row_time_str = row_contents[table_header_names[0]].text()
+                    row_time_str = row_contents[self.table_header_names[0]].text()
                     row_time = datetime.strptime(row_time_str, "%Y-%m-%d %H:%M:%S+0900")
-                    if (row_time >= time_cache):
+                    if (row_time >= self.time_cache):
                         # ユーザーを確認する
-                        row_user_text = row_contents[table_header_names[2]].text()
+                        row_user_text = row_contents[self.table_header_names[2]].text()
                         for user in self.users:
                             if row_user_text == user.name:
                                 # 問題を確認する
-                                question_url = row_contents[table_header_names[1]]("a").attr("href"); #urlはstr型
+                                question_url = row_contents[self.table_header_names[1]]("a").attr("href"); #urlはstr型
                                 for problem in self.problems:
                                     problem_url = problem.url
                                     problem_url_match = re.search(r"/contests", problem_url)
+                                    if problem_url_match is None:
+                                        raise Exception("This can't happen!")
                                     cut_problem_url = problem_url[problem_url_match.start():]
                                     if question_url == cut_problem_url:
                                         # ここまできたらidかぶりじゃない限りsubmissions行きは確定(WJも登録する?)
-                                        result_text = row_contents[table_header_names[6]].text()
-                                        for label, result_type in zip(result_labels, result_types):
+                                        result_text = row_contents[self.table_header_names[6]].text()
+                                        for label, result_type in zip(self.result_labels, self.result_types):
                                             # 必ずどこかでresultが設定される(はず)ので例外処理なし
                                             if result_text == label:
                                                 result = result_type
-                                        score_text = row_contents[table_header_names[4]].text()
+                                        score_text = row_contents[self.table_header_names[4]].text()
                                         # idの取得はジャッジの表示が横に伸びている場合とそうでない場合に分ける
-                                        if row_contents[table_header_names[7]].text() == "Detail":
-                                            id_url = row_contents[table_header_names[7]]("a").attr("href");
+                                        if row_contents[self.table_header_names[7]].text() == "Detail":
+                                            id_url = row_contents[self.table_header_names[7]]("a").attr("href");
                                             id_url_match = re.search(r"submissions/", id_url)
+                                            if id_url_match is None:
+                                                raise Exception("This can't happen!")
                                             id_text = id_url[id_url_match.end():]
                                         else:
-                                            id_url = row_contents[table_header_names[9]]("a").attr("href");
+                                            id_url = row_contents[self.table_header_names[9]]("a").attr("href");
                                             id_url_match = re.search(r"submissions/", id_url)
+                                            if id_url_match is None:
+                                                raise Exception("This can't happen!")
                                             id_text = id_url[id_url_match.end():]
                                         # idかぶりを検証(ページ読み込みの間に1ページ目から2ページ目に提出がずれた場合などにidかぶりが起きうる)
                                         already_submitted = False
@@ -124,7 +134,7 @@ class AtCoderServer(VCServer):
                                                                     result=result,
                                                                     score=int(score_text),
                                                                     time=row_time,
-                                                                    id_=int(id_text)
+                                                                    id_=id_text)
                                             # defaultdict なので存在しないキーにアクセスしても平気
                                             self.submissions[user][problem].append(submission)
                                         break
@@ -143,3 +153,25 @@ class AtCoderServer(VCServer):
 
     def accept_url(self, url: str) -> bool:
         return bool(re.match(r"https?://atcoder\.jp/contests/", url))
+
+    def check_id_duplicated(self, user, problem, row_contents) -> bool:
+        # idの取得はジャッジの表示が横に伸びている場合とそうでない場合に分ける
+        if row_contents[self.table_header_names[7]].text() == "Detail":
+            id_url = row_contents[self.table_header_names[7]]("a").attr("href");
+            id_url_match = re.search(r"submissions/", id_url)
+            if id_url_match is None:
+                raise Exception("This can't happen!")
+            id_text = id_url[id_url_match.end():]
+        else:
+            id_url = row_contents[self.table_header_names[9]]("a").attr("href");
+            id_url_match = re.search(r"submissions/", id_url)
+            if id_url_match is None:
+                raise Exception("This can't happen!")
+            id_text = id_url[id_url_match.end():]
+        # idかぶりを検証(ページ読み込みの間に1ページ目から2ページ目に提出がずれた場合などにidかぶりが起きうる)
+        already_submitted = False
+        for old_submission in self.submissions[user][problem]:
+            if old_submission.id_ == id_text:
+                already_submitted = True
+        return already_submitted
+        
