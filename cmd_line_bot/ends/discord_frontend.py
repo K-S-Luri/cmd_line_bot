@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from typing import cast, Optional, Callable, Any, List, Union
-from pytypes import typechecked
+from typeguard import typechecked
 import os
 import asyncio
 from threading import Thread
