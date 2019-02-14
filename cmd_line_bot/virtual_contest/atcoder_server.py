@@ -1,7 +1,6 @@
 import re
 from typing import Optional, List, DefaultDict
 from datetime import datetime, timedelta
-from random import randrange
 from collections import defaultdict
 import urllib.request
 from pyquery import PyQuery as pq
@@ -21,7 +20,7 @@ class AtCoderServer(VCServer):
         super().__init__()
         self.submissions: SubmissionDict = defaultdict(lambda: defaultdict(lambda: []))
         self.count: int = 0     # submission の id とか time をテキトーに生成するために使う
-        self.submission_urls = [] # 提出画面urlのリスト
+        self.submission_urls = []  # 提出画面urlのリスト
         self.time_cache = self.DEFAULT_TIME
         self.table_header_names = []
         self.result_labels = ["AC", "CE", "MLE", "TLE", "RE", "OLE", "IE", "WA", "WJ", "WR", "NG"]
@@ -35,7 +34,7 @@ class AtCoderServer(VCServer):
                     query = pq(html_str)
                 name_query = query("#main-container > div.row > div:nth-child(2) > span")
                 name_str = name_query.text()
-                name_match = re.search("-\s", name_str)
+                name_match = re.search(r"-\s", name_str)
                 if name_match is None:
                     raise Exception("This can't happen!")
                 problem_name = name_str[name_match.end():]
@@ -51,7 +50,7 @@ class AtCoderServer(VCServer):
                            start: datetime,
                            end: Optional[datetime] = None) -> None:
         if self.time_cache == self.DEFAULT_TIME:
-            self.time_cache = start 
+            self.time_cache = start
         for problem in self.problems:
             base_url = problem.url
             url_match = re.search("tasks", base_url)
@@ -95,7 +94,7 @@ class AtCoderServer(VCServer):
                         for user in self.users:
                             if row_user_text == user.name:
                                 # 問題を確認する
-                                question_url = row_contents[self.table_header_names[1]]("a").attr("href"); #urlはstr型
+                                question_url = row_contents[self.table_header_names[1]]("a").attr("href")  # urlはstr型
                                 for problem in self.problems:
                                     problem_url = problem.url
                                     problem_url_match = re.search(r"/contests", problem_url)
@@ -112,13 +111,13 @@ class AtCoderServer(VCServer):
                                         score_text = row_contents[self.table_header_names[4]].text()
                                         # idの取得はジャッジの表示が横に伸びている場合とそうでない場合に分ける
                                         if row_contents[self.table_header_names[7]].text() == "Detail":
-                                            id_url = row_contents[self.table_header_names[7]]("a").attr("href");
+                                            id_url = row_contents[self.table_header_names[7]]("a").attr("href")
                                             id_url_match = re.search(r"submissions/", id_url)
                                             if id_url_match is None:
                                                 raise Exception("This can't happen!")
                                             id_text = id_url[id_url_match.end():]
                                         else:
-                                            id_url = row_contents[self.table_header_names[9]]("a").attr("href");
+                                            id_url = row_contents[self.table_header_names[9]]("a").attr("href")
                                             id_url_match = re.search(r"submissions/", id_url)
                                             if id_url_match is None:
                                                 raise Exception("This can't happen!")
@@ -143,7 +142,7 @@ class AtCoderServer(VCServer):
                         must_check_next_page = False
                         break
                 page_count += 1
-        self.time_cache = now_time    
+        self.time_cache = now_time
 
     def get_submissions(self,
                         user: User,
@@ -157,13 +156,13 @@ class AtCoderServer(VCServer):
     def check_id_duplicated(self, user, problem, row_contents) -> bool:
         # idの取得はジャッジの表示が横に伸びている場合とそうでない場合に分ける
         if row_contents[self.table_header_names[7]].text() == "Detail":
-            id_url = row_contents[self.table_header_names[7]]("a").attr("href");
+            id_url = row_contents[self.table_header_names[7]]("a").attr("href")
             id_url_match = re.search(r"submissions/", id_url)
             if id_url_match is None:
                 raise Exception("This can't happen!")
             id_text = id_url[id_url_match.end():]
         else:
-            id_url = row_contents[self.table_header_names[9]]("a").attr("href");
+            id_url = row_contents[self.table_header_names[9]]("a").attr("href")
             id_url_match = re.search(r"submissions/", id_url)
             if id_url_match is None:
                 raise Exception("This can't happen!")
@@ -174,4 +173,3 @@ class AtCoderServer(VCServer):
             if old_submission.id_ == id_text:
                 already_submitted = True
         return already_submitted
-        
