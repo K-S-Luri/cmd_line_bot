@@ -12,6 +12,7 @@ from .vcserver import VCServer
 SubmissionDict = DefaultDict[User, DefaultDict[Problem, List[Submission]]]
 WJ_data = NamedTuple("WJ_data", [("url", str), ("user", User), ("problem", Problem), ("submission_number", int)])
 
+
 class AtCoderServer(VCServer):
     name: ServerName = ServerName("AtCoder")
     DEFAULT_TIME: datetime = datetime(1, 1, 1, 0, 0, 0)
