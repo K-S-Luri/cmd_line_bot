@@ -1,5 +1,5 @@
 import re
-from typing import Optional, List, DefaultDict
+from typing import Optional, List, DefaultDict, Tuple
 from datetime import datetime
 from collections import defaultdict
 import urllib.request
@@ -51,14 +51,7 @@ class AtCoderServer(VCServer):
                            end: Optional[datetime] = None) -> None:
         if self.time_cache == self.DEFAULT_TIME:
             self.time_cache = start
-        for problem in self.problems:
-            base_url = problem.url
-            url_match = re.search("tasks", base_url)
-            if url_match is None:
-                raise Exception("This can't happen!")
-            submission_url = base_url[0:url_match.start()] + "submissions"
-            if submission_url not in self.submission_urls:
-                self.submission_urls.append(submission_url)
+        self.make_submission_urls()
         now_time = datetime.now()
         for submission_url in self.submission_urls:
             must_check_next_page = True
@@ -66,60 +59,12 @@ class AtCoderServer(VCServer):
             # 1ページごとにtime_cacheで行われた提出まで見ていく
             while must_check_next_page:
                 sub_submission_url = submission_url + "?page=" + str(page_count)
-                with urllib.request.urlopen(sub_submission_url) as response:
-                    html_str = response.read().decode("utf-8")
-                    query = pq(html_str)
-                # 表の親を取ってくる
-                table = query("#main-container > div.row > div:nth-child(3) > div.panel.panel-default.panel-submission > div.table-responsive > table")
-                if self.table_header_names == []:
-                    # 表のヘッダ部を取ってくる
-                    theads = table("thead > tr > th")
-                    # 表のヘッダ部の名前をリストに格納する
-                    for thead in theads:
-                        thead_text = pq(thead).text()
-                        self.table_header_names.append(thead_text)
-                # 各行のデータをとってくる
-                rows = table("tbody > tr")
+                rows = self.make_page_rows(sub_submission_url)
                 for row in rows:
-                    row_contents = dict()
-                    columns = pq(row)("td")
-                    for column_name, column in zip(self.table_header_names, columns):
-                        row_contents[column_name] = pq(column)
-                    # まず時間を確認する
-                    row_time_str = row_contents[self.table_header_names[0]].text()
-                    row_time = datetime.strptime(row_time_str, "%Y-%m-%d %H:%M:%S+0900")
-                    if end is not None and row_time >= end:
-                        continue
-                    if row_time < self.time_cache:
+                    row_continue = self.row_process(row, end)
+                    if not row_continue:
                         must_check_next_page = False
                         break
-                    # ユーザーを確認する
-                    user = self.user_check(row_contents)
-                    if user is None:
-                        continue
-                    # 問題を確認する
-                    problem = self.problem_check(row_contents)
-                    if problem is None:
-                        continue
-                    # idかぶりを確認する
-                    already_submitted, id_ = self.check_id_duplicated(user, problem, row_contents)
-                    if already_submitted:
-                        continue
-                    # ここまできたらsubmissions行きは確定(WJも登録する?)
-                    result_text = row_contents[self.table_header_names[6]].text()
-                    for label, result_type in zip(self.result_labels, self.result_types):
-                        # 必ずどこかでresultが設定される(はず)ので例外処理なし
-                        if result_text == label:
-                            result = result_type
-                    score_text = row_contents[self.table_header_names[4]].text()
-                    submission = Submission(problem=problem,
-                                            user=user,
-                                            result=result,
-                                            score=int(score_text),
-                                            time=row_time,
-                                            id_=id_)
-                    # defaultdict なので存在しないキーにアクセスしても平気
-                    self.submissions[user][problem].append(submission)
                 page_count += 1
         self.time_cache = now_time
         if end is not None:
@@ -134,6 +79,82 @@ class AtCoderServer(VCServer):
 
     def accept_url(self, url: str) -> bool:
         return bool(re.match(r"https?://atcoder\.jp/contests/", url))
+
+    def make_submission_urls(self) -> None:
+        """現在登録されている問題をみて、その提出画面のurlの
+          リストを作る。2回目以降に呼び出した場合、差分があれば追加する"""
+        for problem in self.problems:
+            base_url = problem.url
+            url_match = re.search("tasks", base_url)
+            if url_match is None:
+                raise Exception("This can't happen!")
+            submission_url = base_url[0:url_match.start()] + "submissions"
+            if submission_url not in self.submission_urls:
+                self.submission_urls.append(submission_url)
+
+    def make_page_rows(self, sub_submission_url: str):
+        """提出画面のurlをページごとに指定されたとき、
+          そこから提出たちを表す部分を取り出して返す"""
+        with urllib.request.urlopen(sub_submission_url) as response:
+            html_str = response.read().decode("utf-8")
+            query = pq(html_str)
+        # 表の親を取ってくる
+        table = query("#main-container > div.row > div:nth-child(3) > div.panel.panel-default.panel-submission > div.table-responsive > table")
+        if self.table_header_names == []:
+            # 表のヘッダ部を取ってくる
+            theads = table("thead > tr > th")
+            # 表のヘッダ部の名前をリストに格納する
+            for thead in theads:
+                thead_text = pq(thead).text()
+                self.table_header_names.append(thead_text)
+        # 各行のデータをとってくる
+        rows = table("tbody > tr")
+        return rows
+
+    def row_process(self, row, end: Optional[datetime]) -> bool:
+        """update_submissionにおいて、1つ1つの提出をpyqueryの形から
+          submissionの形になるように処理する。
+          そして、提出の時間がtime_cacheより前になっていないか、この先の提出も
+          見るべきかどうかを返す"""
+        row_contents = dict()
+        columns = pq(row)("td")
+        for column_name, column in zip(self.table_header_names, columns):
+            row_contents[column_name] = pq(column)
+        # まず時間を確認する
+        row_time_str = row_contents[self.table_header_names[0]].text()
+        row_time = datetime.strptime(row_time_str, "%Y-%m-%d %H:%M:%S+0900")
+        if end is not None and row_time >= end:
+            return True
+        if row_time < self.time_cache:
+            return False
+        # ユーザーを確認する
+        user = self.user_check(row_contents)
+        if user is None:
+            return True
+        # 問題を確認する
+        problem = self.problem_check(row_contents)
+        if problem is None:
+            return True
+        # idかぶりを確認する
+        already_submitted, id_ = self.check_id_duplicated(user, problem, row_contents)
+        if already_submitted:
+            return True
+        # ここまできたらsubmissions行きは確定(WJも登録する?)
+        result_text = row_contents[self.table_header_names[6]].text()
+        for label, result_type in zip(self.result_labels, self.result_types):
+            # 必ずどこかでresultが設定される(はず)ので例外処理なし
+            if result_text == label:
+                result = result_type
+        score_text = row_contents[self.table_header_names[4]].text()
+        submission = Submission(problem=problem,
+                                user=user,
+                                result=result,
+                                score=int(score_text),
+                                time=row_time,
+                                id_=id_)
+        # defaultdict なので存在しないキーにアクセスしても平気
+        self.submissions[user][problem].append(submission)
+        return True
 
     def user_check(self, row_contents) -> Optional[User]:
         """update_submissionにおいて、与えられた提出が
@@ -158,11 +179,11 @@ class AtCoderServer(VCServer):
                 raise Exception("This can't happen!")
             cut_problem_url = problem_url[problem_url_match.start():]
             if question_url == cut_problem_url:
+                # cutした方で比較しているのは、httpとhttpsの差があるかもしれないと思ったから
                 return problem
-        return None
-                
+        return None                
 
-    def check_id_duplicated(self, user: User, problem: Problem, row_contents) -> (bool, str):
+    def check_id_duplicated(self, user: User, problem: Problem, row_contents) -> Tuple[bool, str]:
         """update_submissionにおいて、提出のidがかぶっているかどうかと、id_textの内容を返す"""
         # idの取得はジャッジの表示が横に伸びている場合とそうでない場合に分ける
         if row_contents[self.table_header_names[7]].text() == "Detail":

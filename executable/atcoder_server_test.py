@@ -7,11 +7,11 @@ if __name__ == '__main__':
     server = AtCoderServer()
     server.update_problems
     # user の準備
-    user = User(name="asaka")
-    user.set_id(server_name=server.name, user_id="asaka")
+    user = User(name="Nalga")
+    user.set_id(server_name=server.name, user_id="Nalga")
     server.add_user(user)
-    user2 = User(name="zekatsu")
-    user2.set_id(server_name=server.name, user_id="zekatsu")
+    user2 = User(name="wakarap")
+    user2.set_id(server_name=server.name, user_id="wakarap")
     server.add_user(user2)
     # problem の準備
     problem1 = Problem(url="https://atcoder.jp/contests/abc117/tasks/abc117_b", server_name=server.name)
