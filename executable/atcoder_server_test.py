@@ -22,8 +22,8 @@ if __name__ == '__main__':
     # update
     server.update_problems()
     # 提出を受け取る
-    server.update_submissions(datetime.now() - timedelta(hours=2))
-    server.update_submissions(datetime.now())
+    time = datetime(2019, 2, 16, 19, 5, 38)
+    server.update_submissions(datetime.now() - timedelta(hours=2), time)
     for prob in [problem1, problem2]:
         print("[{prob}]".format(prob=prob))
         for submission in server.get_submissions(user, prob):
