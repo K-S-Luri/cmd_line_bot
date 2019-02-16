@@ -1,5 +1,5 @@
 import re
-from typing import Optional, List, DefaultDict
+from typing import List, DefaultDict
 from datetime import datetime, timedelta
 from random import randrange
 from collections import defaultdict
@@ -14,8 +14,10 @@ SubmissionDict = DefaultDict[User, DefaultDict[Problem, List[Submission]]]
 class ExampleServer(VCServer):
     name: ServerName = ServerName("example")
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self,
+                 since: datetime,
+                 until: datetime):
+        super().__init__(since, until)
         self.submissions: SubmissionDict = defaultdict(lambda: defaultdict(lambda: []))
         self.count: int = 0     # submission の id とか time をテキトーに生成するために使う
 
@@ -26,9 +28,7 @@ class ExampleServer(VCServer):
             problem_score = (i+1) * 100
             problem.set_data(name=problem_name, score=problem_score)
 
-    def update_submissions(self,
-                           start: datetime,
-                           end: Optional[datetime] = None) -> None:
+    def update_submissions(self) -> None:
         "update するたびにランダムに submit される"
         for user in self.users:
             i = randrange(len(self.problems))
