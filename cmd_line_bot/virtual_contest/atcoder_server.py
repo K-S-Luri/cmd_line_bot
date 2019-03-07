@@ -1,5 +1,5 @@
 import re
-from typing import Optional, List, DefaultDict, Tuple, NamedTuple, Any
+from typing import Optional, List, DefaultDict, Tuple, NamedTuple, Dict, Any
 from datetime import datetime
 from collections import defaultdict
 import urllib.request
@@ -19,14 +19,17 @@ class AtCoderServer(VCServer):
     RESULT_LABELS: List[str] = ["AC", "CE", "MLE", "TLE", "RE", "OLE", "IE", "WA", "WJ", "WR", "NG"]
     RESULT_TYPES: List[Result] = [Result.AC, Result.CE, Result.MLE, Result.TLE, Result.RE, Result.OLE, Result.IE, Result.WA, Result.WJ, Result.WR, Result.NG]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self,
+                 since: datetime,
+                 until: datetime) -> None:
+        super().__init__(since, until)
         self.submissions: SubmissionDict = defaultdict(lambda: defaultdict(lambda: []))
         self.count: int = 0     # submission の id とか time をテキトーに生成するために使う
-        self.submission_urls = []  # 提出画面urlのリスト
-        self.time_cache = self.DEFAULT_TIME
-        self.table_header_names = []
-        self.WJ_list: List[WJ_data] = [] # resultがWJになっている提出のリスト。詳細画面のurl、User、problem、その提出がsubmissions[user][problem]の何番目かを示す数が入る。
+        self.submission_urls: List[str] = []  # 提出画面urlのリスト
+        self.time_cache_until: datetime = since
+        self.time_cache_since: datetime = since
+        self.table_header_names: List[str] = []
+        self.WJ_list: List[WJ_data] = []  # resultがWJになっている提出のリスト。詳細画面のurl、User、problem、その提出がsubmissions[user][problem]の何番目かを示す数が入る。
 
     def update_problems(self) -> None:
         for problem in self.problems:
@@ -48,31 +51,34 @@ class AtCoderServer(VCServer):
                     problem_score = int(score_str)
                 problem.set_data(name=problem_name, score=problem_score)
 
-    def update_submissions(self,
-                           start: datetime,
-                           end: Optional[datetime] = None) -> None:
-        if self.time_cache == self.DEFAULT_TIME:
-            self.time_cache = start
+    def update_submissions(self) -> None:
+        # if self.time_cache_until == self.DEFAULT_TIME:
+        #     self.time_cache_until = start
+        if self._since < self.time_cache_since:
+            target_time = self._since
+        else:
+            target_time = self.time_cache_until
         self.WJ_reload()
         self.make_submission_urls()
         now_time = datetime.now()
         for submission_url in self.submission_urls:
             must_check_next_page = True
             page_count = 1
-            # 1ページごとにtime_cacheで行われた提出まで見ていく
+            # 1ページごとにtime_cache_untilで行われた提出まで見ていく
             while must_check_next_page:
                 sub_submission_url = submission_url + "?page=" + str(page_count)
                 rows = self.make_page_rows(sub_submission_url)
                 for row in rows:
-                    row_continue = self.row_process(row, end)
+                    row_continue = self.row_process(row, target_time)
                     if not row_continue:
                         must_check_next_page = False
                         break
                 page_count += 1
-        self.time_cache = now_time
-        if end is not None:
-            if self.time_cache > end:
-                self.time_cache = end
+        self.time_cache_until = min(self._until, now_time)
+        self.time_cache_since = self._since
+        # if end is not None:
+        #     if self.time_cache_until > end:
+        #         self.time_cache_until = end
 
     def get_submissions(self,
                         user: User,
@@ -118,7 +124,7 @@ class AtCoderServer(VCServer):
             if submission_url not in self.submission_urls:
                 self.submission_urls.append(submission_url)
 
-    def make_page_rows(self, sub_submission_url: str) -> Any:
+    def make_page_rows(self, sub_submission_url: str) -> pq:
         """提出画面のurlをページごとに指定されたとき、
           そこから提出たちを表す部分を取り出して返す。ここでは通信を行う"""
         with urllib.request.urlopen(sub_submission_url) as response:
@@ -137,22 +143,30 @@ class AtCoderServer(VCServer):
         rows = table("tbody > tr")
         return rows
 
-    def row_process(self, row: Any, end: Optional[datetime]) -> bool:
+    def row_process(self, row: Any, target_time: datetime) -> bool:
         """update_submissionにおいて、1つ1つの提出をpyqueryの形から
           submissionの形になるように処理する。
-          そして、提出の時間がtime_cacheより前になっていないか、この先の提出も
+          そして、提出の時間がtime_cache_untilより前になっていないか、この先の提出も
           見るべきかどうかを返す"""
-        row_contents = dict()
+        row_contents: Dict[str, pq] = dict()
         columns = pq(row)("td")
         for column_name, column in zip(self.table_header_names, columns):
             row_contents[column_name] = pq(column)
         # まず時間を確認する
+        # 取得すべき提出はtarget_timeからself._untilまでだが、
+        # このうちself.time_cache_sinceからself.time_cache_untilまでの提出は
+        # すでに取得しているはずなので無視してよい
         row_time_str = row_contents[self.table_header_names[0]].text()
         row_time = datetime.strptime(row_time_str, "%Y-%m-%d %H:%M:%S+0900")
-        if end is not None and row_time >= end:
+        if row_time > self._until:
             return True
-        if row_time < self.time_cache:
+        if row_time < target_time:
             return False
+        # untilの方は、前回の取得のタイミングにより、
+        # untilちょうどの時刻の1秒のうち0.何秒しか取得できていない
+        # 場合があることを考えて、>にしておく。
+        if self.time_cache_until > row_time and row_time >= self.time_cache_since:
+            return True
         # ユーザーを確認する
         user = self.user_check(row_contents)
         if user is None:
@@ -183,17 +197,17 @@ class AtCoderServer(VCServer):
         self.submissions[user][problem].append(submission)
         return True
 
-    def user_check(self, row_contents: Any) -> Optional[User]:
+    def user_check(self, row_contents: Dict[str, pq]) -> Optional[User]:
         """update_submissionにおいて、与えられた提出が
           コンテスト参加者のものになっているかどうかを確認し、参加者ならそのuserを、
           そうでないならNoneを返す"""
         row_user_text = row_contents[self.table_header_names[2]].text()
         for user in self.users:
-            if row_user_text == user.name:
+            if row_user_text == user.ids[self.name]:
                 return user
         return None
 
-    def problem_check(self, row_contents: Any) -> Optional[Problem]:
+    def problem_check(self, row_contents: Dict[str, pq]) -> Optional[Problem]:
         """update_submissionにおいて、与えられた提出が
           コンテストの問題の提出になっているかどうかを確認し、コンテスト問題ならその問題を、
           そうでないならNoneを返す
@@ -208,9 +222,12 @@ class AtCoderServer(VCServer):
             if question_url == cut_problem_url:
                 # cutした方で比較しているのは、httpとhttpsの差があるかもしれないと思ったから
                 return problem
-        return None                
+        return None
 
-    def check_id_duplicated(self, user: User, problem: Problem, row_contents: Any) -> Tuple[bool, str]:
+    def check_id_duplicated(self,
+                            user: User,
+                            problem: Problem,
+                            row_contents: Dict[str, pq]) -> Tuple[bool, str]:
         """update_submissionにおいて、提出のidがかぶっているかどうかと、id_textの内容を返す"""
         # idの取得はジャッジの表示が横に伸びている場合とそうでない場合に分ける
         if row_contents[self.table_header_names[7]].text() == "Detail":
@@ -231,7 +248,10 @@ class AtCoderServer(VCServer):
                 return True, id_
         return False, id_
 
-    def result_check(self, user: User, problem: Problem, row_contents: Any) -> Result:
+    def result_check(self,
+                     user: User,
+                     problem: Problem,
+                     row_contents: Dict[str, pq]) -> Result:
         """update_submissionにおいて、提出の結果を返す。
           "3/18 WA"などとなっている場合は、処理中としてWJを返すことにする"""
         # ここまできたらsubmissions行きは確定(WJも登録する?)
