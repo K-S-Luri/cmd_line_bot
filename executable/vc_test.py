@@ -1,10 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from cmd_line_bot.virtual_contest.base import User, Problem
 from cmd_line_bot.virtual_contest.example_server import ExampleServer
 
 if __name__ == '__main__':
-    server = ExampleServer()
+    since = datetime(year=2019, month=1, day=1, hour=21)
+    until = since + timedelta(hours=2)
+    server = ExampleServer(since, until)
     server.update_problems
     # user の準備
     user = User(name="Bourbaki")
@@ -18,7 +20,7 @@ if __name__ == '__main__':
     # update
     server.update_problems()
     for _ in range(5):
-        server.update_submissions(datetime.now())
+        server.update_submissions()
     for prob in [problem1, problem2]:
         print("[{prob}]".format(prob=prob))
         for submission in server.get_submissions(user, prob):

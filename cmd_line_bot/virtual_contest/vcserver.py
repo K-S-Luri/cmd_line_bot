@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 from .base import ServerName, User, Problem, Submission, VCError, VCDuplicateUserError
 
@@ -9,7 +9,9 @@ class VCServer(metaclass=ABCMeta):
     name: ServerName = ServerName("NONAME")
 
     @abstractmethod
-    def __init__(self) -> None:
+    def __init__(self,
+                 since: datetime,
+                 until: datetime) -> None:
         """__init__ もサブクラスで override する．
 特に，submission を保持するコンテナは，サブクラスでメンバとして実装することが期待されている．
 コンテナの型は
@@ -20,6 +22,8 @@ class VCServer(metaclass=ABCMeta):
 最終的に get_submissions がちゃんと動くのであれば，内部実装は何でも良い"""
         self.users: List[User] = []
         self.problems: List[Problem] = []
+        self._since: datetime = since
+        self._until: datetime = until
 
     @abstractmethod
     def update_problems(self) -> None:
@@ -27,16 +31,12 @@ class VCServer(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def update_submissions(self,
-                           start: datetime,
-                           end: Optional[datetime] = None) -> None:
+    def update_submissions(self) -> None:
         """submission の一覧をサーバーから取ってくる
 
-start: バチャコン開始時刻
-end: バチャコン終了時刻 (None なら5000兆年後)
-
-start は常に「バチャコン開始時刻」である．取得済みかどうかは関係ない．
-なので，キャッシュはサブクラスで実装する．"""
+self._since と self._until の間の submissions を取得する．
+呼び出しごとに，self._since や self._until の値が異なっている可能性があることに注意．
+また，キャッシュは考慮されていないので，サブクラスの内部で実装すること．"""
         pass
 
     @abstractmethod
@@ -51,6 +51,16 @@ start は常に「バチャコン開始時刻」である．取得済みかど�
     @abstractmethod
     def accept_url(self, url: str) -> bool:
         "url がこのサーバーのものかどうかを bool で返す"
+
+    def set_since(self, since: datetime) -> None:
+        if self._since < since:
+            raise VCError("'since' cannot increase")
+        self._since = since
+
+    def set_until(self, until: datetime) -> None:
+        if self._until > until:
+            raise VCError("'until' cannot decrease")
+        self._until = until
 
     def create_problem(self, url: str) -> Problem:
         "url で与えられる Problem のインスタンスを返す"
